@@ -1,0 +1,6 @@
+@hanapbahay_backend_HostAddress = http://localhost:5057
+
+GET {{hanapbahay_backend_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
