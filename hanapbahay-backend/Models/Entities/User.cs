@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace hanapbahay_backend.Models;
+namespace hanapbahay_backend.Models.Entities;
 
 public class User
 {

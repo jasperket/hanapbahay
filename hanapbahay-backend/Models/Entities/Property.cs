@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
 
-namespace hanapbahay_backend.Models;
+namespace hanapbahay_backend.Models.Entities;
 
 [Index(nameof(City))]
 [Index(nameof(Province), nameof(City), nameof(ZipCode))]

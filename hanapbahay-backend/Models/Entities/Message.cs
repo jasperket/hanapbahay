@@ -1,4 +1,4 @@
-namespace hanapbahay_backend.Models;
+namespace hanapbahay_backend.Models.Entities;
 
 public class Message
 {
