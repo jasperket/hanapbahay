@@ -45,6 +45,6 @@ public class Property
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     // Navigation
-    public ICollection<PropertyAmenity> Amenities { get; set; } = new List<PropertyAmenity>();
+    public ICollection<PropertyAmenity> PropertyAmenities { get; set; } = new List<PropertyAmenity>();
     public ICollection<Media> Media { get; set; } = new List<Media>();
 }

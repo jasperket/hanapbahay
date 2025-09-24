@@ -39,7 +39,7 @@ public class AppDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
 
         modelBuilder.Entity<PropertyAmenity>()
             .HasOne(pa => pa.Property)
-            .WithMany(p => p.Amenities)
+            .WithMany(p => p.PropertyAmenities)
             .HasForeignKey(pa => pa.PropertyId);
 
         modelBuilder.Entity<PropertyAmenity>()
