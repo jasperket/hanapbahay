@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using hanapbahay_backend.Models.Entities;
 
-namespace hanapbahay_backend.Models;
+namespace hanapbahay_backend.Data;
 
 public class AppDbContext : DbContext
 {

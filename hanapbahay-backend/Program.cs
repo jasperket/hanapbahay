@@ -1,4 +1,4 @@
-using hanapbahay_backend.Models;
+using hanapbahay_backend.Data;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
