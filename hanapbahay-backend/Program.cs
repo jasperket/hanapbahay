@@ -1,4 +1,6 @@
 using hanapbahay_backend.Data;
+using hanapbahay_backend.Models.Entities;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,8 +12,14 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApiDocument();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddAuthorization();
+builder.Services.AddIdentityApiEndpoints<User>()
+    .AddRoles<IdentityRole<Guid>>()
+    .AddEntityFrameworkStores<AppDbContext>();
 
 var app = builder.Build();
+
+app.MapIdentityApi<User>();
 
 using (var scope = app.Services.CreateScope())
 {

@@ -1,16 +1,18 @@
 using Microsoft.EntityFrameworkCore;
 using hanapbahay_backend.Models.Entities;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.General;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace hanapbahay_backend.Data;
 
-public class AppDbContext : DbContext
+public class AppDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
 {
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options)
     {
     }
 
-    public DbSet<User> Users { get; set; } = null!;
     public DbSet<Property> Properties { get; set; } = null!;
     public DbSet<Amenity> Amenities { get; set; } = null!;
     public DbSet<PropertyAmenity> PropertyAmenities { get; set; } = null!;

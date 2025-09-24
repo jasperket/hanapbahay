@@ -1,19 +1,12 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Identity;
 
 namespace hanapbahay_backend.Models.Entities;
 
-public class User
+public class User : IdentityUser<Guid>
 {
-    public Guid Id { get; set; }
-
     [Required, MaxLength(80)]
     public string DisplayName { get; set; } = null!;
-
-    [Required, EmailAddress]
-    public string Email { get; set; } = null!;
-
-    [Phone]
-    public string? Phone { get; set; }
 
     public UserRole Role { get; set; } = UserRole.Renter;
 
@@ -21,8 +14,7 @@ public class User
 
     public ICollection<Property> Properties { get; set; } = new List<Property>();
     public ICollection<Wishlist> Wishlists { get; set; } = new List<Wishlist>();
-    public ICollection<LandlordRating> RatingsGiven { get; set; } = new List<LandlordRating>(); // as renter
-    public ICollection<LandlordRating> RatingsReceived { get; set; } = new List<LandlordRating>(); // as landlord
-
+    public ICollection<LandlordRating> RatingsGiven { get; set; } = new List<LandlordRating>();
+    public ICollection<LandlordRating> RatingsReceived { get; set; } = new List<LandlordRating>();
 }
 
