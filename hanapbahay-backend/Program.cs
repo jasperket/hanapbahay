@@ -23,6 +23,8 @@ builder.Services.AddIdentityApiEndpoints<User>()
 
 builder.Services.AddScoped<IAuthService, AuthService>();
 
+builder.Services.AddAutoMapper(typeof(Program));
+
 var app = builder.Build();
 
 

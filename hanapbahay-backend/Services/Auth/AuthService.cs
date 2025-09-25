@@ -1,4 +1,5 @@
 // Services/Auth/AuthService.cs
+using AutoMapper;
 using hanapbahay_backend.Dto.Auth;
 using hanapbahay_backend.Models.Entities;
 using Microsoft.AspNetCore.Identity;
@@ -7,24 +8,20 @@ namespace hanapbahay_backend.Services.Auth;
 
 public class AuthService : IAuthService
 {
+    private readonly IMapper _mapper;
     private readonly UserManager<User> _userManager;
     private readonly SignInManager<User> _signInManager;
 
-    public AuthService(UserManager<User> userManager, SignInManager<User> signInManager)
+    public AuthService(UserManager<User> userManager, SignInManager<User> signInManager, IMapper mapper)
     {
         _userManager = userManager;
         _signInManager = signInManager;
+        _mapper = mapper;
     }
 
     public async Task<(bool Success, IEnumerable<string> Errors)> RegisterAsync(RegisterRequest request)
     {
-        var user = new User
-        {
-            UserName = request.Email,
-            Email = request.Email,
-            DisplayName = request.DisplayName,
-            Role = request.Role
-        };
+        var user = _mapper.Map<User>(request);
 
         var result = await _userManager.CreateAsync(user, request.Password);
         if (!result.Succeeded)
