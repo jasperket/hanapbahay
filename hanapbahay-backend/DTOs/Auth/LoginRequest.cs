@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace hanapbahay_backend.Dto;
+namespace hanapbahay_backend.Dto.Auth;
 
 public class LoginRequest
 {

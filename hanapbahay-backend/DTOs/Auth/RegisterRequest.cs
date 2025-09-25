@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using hanapbahay_backend.Models.Entities;
 
-namespace hanapbahay_backend.Dto;
+namespace hanapbahay_backend.Dto.Auth;
 
 public class RegisterRequest
 {
