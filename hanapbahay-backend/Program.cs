@@ -19,13 +19,13 @@ builder.Services.AddIdentityApiEndpoints<User>()
 
 var app = builder.Build();
 
-app.MapIdentityApi<User>();
 
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.EnsureCreated();
     db.Database.Migrate();
+    await SeedData.SeedRolesAsync(scope.ServiceProvider);
 }
 
 // Configure the HTTP request pipeline.
