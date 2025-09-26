@@ -3,7 +3,7 @@ using hanapbahay_backend.Models.Entities;
 using hanapbahay_backend.Services.Auth;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using AutoMapper;
+using hanapbahay_backend.Repositories.Generic;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +23,8 @@ builder.Services.AddIdentityApiEndpoints<User>()
     .AddEntityFrameworkStores<AppDbContext>();
 
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+
 
 builder.Services.AddAutoMapper(cfg =>
 {
