@@ -156,7 +156,10 @@ namespace hanapbahay_backend.Migrations
             modelBuilder.Entity("hanapbahay_backend.Models.Entities.Amenity", b =>
                 {
                     b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Code")
                         .IsRequired()

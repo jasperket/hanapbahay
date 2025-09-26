@@ -12,8 +12,8 @@ using hanapbahay_backend.Data;
 namespace hanapbahay_backend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250926034016_AmenityIdValueGeneratedNever")]
-    partial class AmenityIdValueGeneratedNever
+    [Migration("20250926042459_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -159,7 +159,10 @@ namespace hanapbahay_backend.Migrations
             modelBuilder.Entity("hanapbahay_backend.Models.Entities.Amenity", b =>
                 {
                     b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Code")
                         .IsRequired()

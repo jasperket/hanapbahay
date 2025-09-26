@@ -117,9 +117,5 @@ public class AppDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
             .HasForeignKey(p => p.LandlordId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        modelBuilder.Entity<Amenity>()
-            .Property(a => a.Id)
-            .ValueGeneratedNever();
-
     }
 }
