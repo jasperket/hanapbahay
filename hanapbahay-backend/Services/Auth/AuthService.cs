@@ -1,4 +1,5 @@
 // Services/Auth/AuthService.cs
+using System.Security.Claims;
 using AutoMapper;
 using hanapbahay_backend.Dto.Auth;
 using hanapbahay_backend.Models.Entities;
@@ -49,5 +50,20 @@ public class AuthService : IAuthService
     public async Task LogoutAsync()
     {
         await _signInManager.SignOutAsync();
+    }
+
+    public object Check(ClaimsPrincipal user)
+    {
+        if (!user.Identity?.IsAuthenticated ?? true)
+            return new { isAuthenticated = false };
+
+        return new
+        {
+            isAuthenticated = true,
+            email = user.Identity?.Name,
+            roles = user.Claims
+                .Where(c => c.Type == ClaimTypes.Role)
+                .Select(c => c.Value)
+        };
     }
 }

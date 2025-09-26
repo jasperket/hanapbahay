@@ -56,4 +56,12 @@ public class AuthController : ControllerBase
         await _authService.LogoutAsync();
         return Ok(new { message = "Logout successful" });
     }
+
+    [HttpGet("check")]
+    [Authorize]
+    public IActionResult Check()
+    {
+        var result = _authService.Check(User);
+        return Ok(result);
+    }
 }
