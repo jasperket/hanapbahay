@@ -12,11 +12,14 @@ services:
     image: mcr.microsoft.com/mssql/server:2022-latest
     environment:
       ACCEPT_EULA: "Y"
-      MSSQL_SA_PASSWORD: "HanapbahayDB2025!"
     ports:
       - "1433:1433"
     volumes:
       - db_data:/var/opt/mssql
+      - ./docker/entrypoint.sh:/entrypoint.sh:ro
+    entrypoint: ["/bin/bash", "/entrypoint.sh"]
+    secrets:
+      - db_password
   server:
     build:
       context: ./hanapbahay-backend
@@ -34,3 +37,7 @@ services:
 
 volumes:
   db_data:
+
+secrets:
+  db_password:
+    file: ./db_password.txt
