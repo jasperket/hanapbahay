@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace hanapbahay_backend.Data;
 
-public static class SeedData
+public static class IdentitySeeder
 {
     public static async Task SeedRolesAsync(IServiceProvider services)
     {
