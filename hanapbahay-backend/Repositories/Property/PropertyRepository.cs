@@ -1,15 +1,13 @@
 using hanapbahay_backend.Data;
 using hanapbahay_backend.Dto.Property;
+using hanapbahay_backend.Repositories.Generic;
 
 namespace hanapbahay_backend.Repositories.Property;
 
-public class PropertyRepository : IPropertyRepository
+public class PropertyRepository : GenericRepository<Models.Entities.Property>, IPropertyRepository
 {
-    private readonly AppDbContext _context;
-
-    public PropertyRepository(AppDbContext context)
+    public PropertyRepository(AppDbContext context) : base(context)
     {
-        _context = context;
     }
 
     public async Task AddPropertyAsync(AddPropertyRequest request)
