@@ -1,6 +1,7 @@
 using hanapbahay_backend.Data;
 using hanapbahay_backend.Models.Entities;
 using hanapbahay_backend.Services.Auth;
+using hanapbahay_backend.Services.Property;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using hanapbahay_backend.Repositories.Generic;
@@ -44,6 +45,7 @@ builder.Services.AddAzureClients(clientBuilder =>
 // Services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
+builder.Services.AddScoped<IPropertyService, PropertyService>();
 
 // Repositories
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
@@ -68,6 +70,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

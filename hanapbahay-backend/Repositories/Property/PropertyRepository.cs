@@ -10,7 +10,7 @@ public class PropertyRepository : GenericRepository<Models.Entities.Property>, I
     {
     }
 
-    public async Task AddPropertyAsync(AddPropertyRequest request)
+    public Task AddPropertyAsync(AddPropertyRequest request)
     {
         throw new NotImplementedException();
     }

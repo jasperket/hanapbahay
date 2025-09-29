@@ -33,7 +33,5 @@ public class AddPropertyRequest
 
     public ListingStatus Status { get; set; } = ListingStatus.Draft;
 
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
     public string[] AmenityCodes { get; set; } = Array.Empty<string>();
 }
