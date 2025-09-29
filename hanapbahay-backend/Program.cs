@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using hanapbahay_backend.Repositories.Generic;
 using Microsoft.Extensions.Azure;
-using Azure.Storage.Blobs;
 using Azure.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
