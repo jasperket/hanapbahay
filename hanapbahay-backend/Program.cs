@@ -25,10 +25,6 @@ builder.Services.AddIdentityApiEndpoints<User>()
     .AddRoles<IdentityRole<Guid>>()
     .AddEntityFrameworkStores<AppDbContext>();
 
-builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-
-
 builder.Services.AddAutoMapper(cfg =>
 {
     cfg.LicenseKey = builder.Configuration["AutoMapper:LicenseKey"];
@@ -45,6 +41,13 @@ builder.Services.AddAzureClients(clientBuilder =>
 
     clientBuilder.UseCredential(new ClientSecretCredential(tenantId, clientId, clientSecret));
 });
+
+// Services
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
+
+// Repositories
+builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
 var app = builder.Build();
 
