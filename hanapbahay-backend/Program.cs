@@ -4,6 +4,9 @@ using hanapbahay_backend.Services.Auth;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using hanapbahay_backend.Repositories.Generic;
+using Microsoft.Extensions.Azure;
+using Azure.Storage.Blobs;
+using Azure.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +33,17 @@ builder.Services.AddAutoMapper(cfg =>
 {
     cfg.LicenseKey = builder.Configuration["AutoMapper:LicenseKey"];
     cfg.AddMaps(typeof(Program));
+});
+
+builder.Services.AddAzureClients(clientBuilder =>
+{
+    var tenantId = builder.Configuration["Azure:AZURE_TENANT_ID"];
+    var clientId = builder.Configuration["Azure:AZURE_CLIENT_ID"];
+    var clientSecret = builder.Configuration["Azure:AZURE_CLIENT_SECRET"];
+
+    clientBuilder.AddBlobServiceClient(new Uri("https://rentahanstorage.blob.core.windows.net"));
+
+    clientBuilder.UseCredential(new ClientSecretCredential(tenantId, clientId, clientSecret));
 });
 
 var app = builder.Build();

@@ -30,6 +30,11 @@ services:
       - db
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=${DefaultConnection}
+      - Azure__AZURE_TENANT_ID=${AZURE_TENANT_ID}
+      - Azure__AZURE_CLIENT_ID=${AZURE_CLIENT_ID}
+      - Azure__AZURE_CLIENT_SECRET=${AZURE_CLIENT_SECRET}
+      - Automapper__LicenseKey=${AUTOMAPPER_LICENSE}
     develop:
       watch:
         - action: rebuild
