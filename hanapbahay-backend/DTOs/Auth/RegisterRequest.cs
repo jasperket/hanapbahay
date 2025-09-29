@@ -14,6 +14,9 @@ public class RegisterRequest
     [Required, MaxLength(80)]
     public string DisplayName { get; set; } = null!;
 
+    [Required]
+    public string PhoneNumber { get; set; } = null!;
+
     // Defaults to Renter if not provided
     public UserRole Role { get; set; } = UserRole.Renter;
 }
