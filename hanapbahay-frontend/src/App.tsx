@@ -1,13 +1,15 @@
+import { BrowserRouter, Route, Routes } from "react-router";
 import "./App.css";
 import "@fontsource-variable/inter";
+import Home from "./pages/Home";
 
 function App() {
   return (
-    <>
-      <header>
-        <p className="text-rentahan-text text-2xl font-bold">Rentahan</p>
-      </header>
-    </>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
