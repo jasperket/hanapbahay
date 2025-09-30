@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Http;
 
 namespace hanapbahay_backend.Dto.Property;
 

@@ -2,6 +2,7 @@ using AutoMapper;
 using hanapbahay_backend.Data;
 using hanapbahay_backend.Dto.Property;
 using hanapbahay_backend.Models.Entities;
+using hanapbahay_backend.Repositories.Property;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,32 +18,26 @@ public class PropertyService : IPropertyService
     private readonly IMapper _mapper;
     private readonly IBlobStorageService _blobStorageService;
     private readonly ILogger<PropertyService> _logger;
+    private readonly IPropertyRepository _propertyRepository;
 
     public PropertyService(
         AppDbContext context,
         IMapper mapper,
         IBlobStorageService blobStorageService,
-        ILogger<PropertyService> logger)
+        ILogger<PropertyService> logger,
+        IPropertyRepository propertyRepository)
     {
         _context = context;
         _mapper = mapper;
         _blobStorageService = blobStorageService;
         _logger = logger;
+        _propertyRepository = propertyRepository;
     }
 
     public async Task<IEnumerable<PropertyResponse>> GetPropertiesAsync()
     {
-        var properties = await _context.Properties
-            .AsNoTracking()
-            .Where(p => !p.IsDeleted)
-            .Include(p => p.Landlord)
-            .Include(p => p.PropertyAmenities)
-                .ThenInclude(pa => pa.Amenity)
-            .Include(p => p.Media)
-            .OrderByDescending(p => p.CreatedAt)
-            .ToListAsync();
-
-        return _mapper.Map<IEnumerable<PropertyResponse>>(properties);
+        var properties = await _propertyRepository.GetPropertiesAsync();
+        return properties;
     }
 
     public async Task<PropertyResponse?> GetPropertyByIdAsync(int propertyId)

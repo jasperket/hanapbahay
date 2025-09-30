@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using hanapbahay_backend.Repositories.Generic;
 using Microsoft.Extensions.Azure;
 using Azure.Identity;
+using hanapbahay_backend.Repositories.Property;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -49,6 +50,7 @@ builder.Services.AddScoped<IPropertyService, PropertyService>();
 
 // Repositories
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+builder.Services.AddScoped<IPropertyRepository, PropertyRepository>();
 
 var app = builder.Build();
 

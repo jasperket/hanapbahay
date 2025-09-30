@@ -6,4 +6,5 @@ namespace hanapbahay_backend.Repositories.Property;
 public interface IPropertyRepository
 {
     Task AddPropertyAsync(AddPropertyRequest request);
+    Task<IEnumerable<PropertyResponse>> GetPropertiesAsync();
 }

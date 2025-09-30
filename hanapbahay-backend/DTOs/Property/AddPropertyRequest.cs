@@ -34,4 +34,5 @@ public class AddPropertyRequest
     public ListingStatus Status { get; set; } = ListingStatus.Draft;
 
     public string[] AmenityCodes { get; set; } = Array.Empty<string>();
+
 }
