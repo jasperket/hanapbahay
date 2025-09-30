@@ -1,6 +1,18 @@
 import * as React from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router";
+import { isAxiosError } from "axios";
+import { toast } from "sonner";
+import { HouseHeart, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useEffect, useState, useRef } from "react";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -11,10 +23,41 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAuth } from "@/providers/AuthProvider";
 import { cn } from "@/lib/utils";
-import { HouseHeart } from "lucide-react";
+import type { LoginResponse, LogoutResponse, RegisterResponse, RegisterPayload } from "@/types/auth";
 
-// Simple logo component for the navbar
+type RoleOption = "Renter" | "Landlord";
+
+interface LoginFormState {
+  email: string;
+  password: string;
+}
+
+interface RegisterFormState {
+  displayName: string;
+  email: string;
+  password: string;
+  phoneNumber: string;
+  role: RoleOption;
+}
+
+const roles: RoleOption[] = ["Renter", "Landlord"];
+
+const createInitialLoginState = (): LoginFormState => ({
+  email: "",
+  password: "",
+});
+
+const createInitialRegisterState = (): RegisterFormState => ({
+  displayName: "",
+  email: "",
+  password: "",
+  phoneNumber: "",
+  role: "Renter",
+});
+
 const Logo = (props: React.SVGAttributes<SVGElement>) => {
   return (
     <svg
@@ -47,7 +90,6 @@ const Logo = (props: React.SVGAttributes<SVGElement>) => {
   );
 };
 
-// Hamburger icon component
 const HamburgerIcon = ({
   className,
   ...props
@@ -80,7 +122,6 @@ const HamburgerIcon = ({
   </svg>
 );
 
-// Types
 export interface Navbar01NavLink {
   href: string;
   label: string;
@@ -92,46 +133,72 @@ export interface Navbar01Props extends React.HTMLAttributes<HTMLElement> {
   logoHref?: string;
   navigationLinks?: Navbar01NavLink[];
   signInText?: string;
-  signInHref?: string;
   ctaText?: string;
-  ctaHref?: string;
   onSignInClick?: () => void;
   onCtaClick?: () => void;
 }
 
-// Default navigation links
-const defaultNavigationLinks: Navbar01NavLink[] = [
-  // { href: "#", label: "Home", active: true },
-  // { href: "#features", label: "Features" },
-  // { href: "#pricing", label: "Pricing" },
-  // { href: "#about", label: "About" },
-];
+const defaultNavigationLinks: Navbar01NavLink[] = [];
+
+const getErrorMessage = (error: unknown) => {
+  if (isAxiosError(error)) {
+    const payload = error.response?.data as {
+      message?: string;
+      errors?: string[];
+    } | undefined;
+
+    if (payload?.errors?.length) {
+      return payload.errors.join(" ");
+    }
+
+    if (payload?.message) {
+      return payload.message;
+    }
+  }
+
+  return "Something went wrong. Please try again.";
+};
 
 export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
   (
     {
       className,
       logo = <HouseHeart />,
-      logoHref = "#",
+      logoHref = "/",
       navigationLinks = defaultNavigationLinks,
       signInText = "Sign In",
-      signInHref = "#signin",
-      ctaText = "Get Started",
-      ctaHref = "#get-started",
+      ctaText = "Sign Up",
       onSignInClick,
       onCtaClick,
       ...props
     },
     ref,
   ) => {
+    const { user, login, register, logout, isRefreshing } = useAuth();
     const [isMobile, setIsMobile] = useState(false);
     const containerRef = useRef<HTMLElement>(null);
+    const location = useLocation();
+    const navigate = useNavigate();
+
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const [activeTab, setActiveTab] = useState<"login" | "register">("login");
+    const [loginForm, setLoginForm] = useState<LoginFormState>(
+      createInitialLoginState,
+    );
+    const [registerForm, setRegisterForm] = useState<RegisterFormState>(
+      createInitialRegisterState,
+    );
+    const [loginError, setLoginError] = useState<string | null>(null);
+    const [registerError, setRegisterError] = useState<string | null>(null);
+    const [loginSubmitting, setLoginSubmitting] = useState(false);
+    const [registerSubmitting, setRegisterSubmitting] = useState(false);
+    const [logoutSubmitting, setLogoutSubmitting] = useState(false);
 
     useEffect(() => {
       const checkWidth = () => {
         if (containerRef.current) {
           const width = containerRef.current.offsetWidth;
-          setIsMobile(width < 768); // 768px is md breakpoint
+          setIsMobile(width < 768);
         }
       };
 
@@ -147,127 +214,437 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
       };
     }, []);
 
-    // Combine refs
     const combinedRef = React.useCallback(
       (node: HTMLElement | null) => {
         containerRef.current = node;
         if (typeof ref === "function") {
           ref(node);
         } else if (ref) {
-          ref.current = node;
+          (ref as React.MutableRefObject<HTMLElement | null>).current = node;
         }
       },
       [ref],
     );
 
+    const resetForms = React.useCallback(() => {
+      setLoginForm(createInitialLoginState());
+      setRegisterForm(createInitialRegisterState());
+      setLoginError(null);
+      setRegisterError(null);
+      setLoginSubmitting(false);
+      setRegisterSubmitting(false);
+    }, []);
+
+    const handleDialogOpenChange = (open: boolean) => {
+      setDialogOpen(open);
+      if (!open) {
+        setActiveTab("login");
+        resetForms();
+      }
+    };
+
+    const handleSignIn = () => {
+      onSignInClick?.();
+      setActiveTab("login");
+      setDialogOpen(true);
+    };
+
+    const handleSignUp = () => {
+      onCtaClick?.();
+      setActiveTab("register");
+      setDialogOpen(true);
+    };
+
+    const handleLoginSubmit = async (
+      event: React.FormEvent<HTMLFormElement>,
+    ) => {
+      event.preventDefault();
+      setLoginSubmitting(true);
+      setLoginError(null);
+
+      try {
+        const response: LoginResponse = await login(loginForm);
+        toast.success(response.message ?? "Logged in successfully.");
+        resetForms();
+        setDialogOpen(false);
+      } catch (error) {
+        const message = getErrorMessage(error);
+        setLoginError(message);
+        toast.error(message);
+      } finally {
+        setLoginSubmitting(false);
+      }
+    };
+
+    const handleRegisterSubmit = async (
+      event: React.FormEvent<HTMLFormElement>,
+    ) => {
+      event.preventDefault();
+      setRegisterSubmitting(true);
+      setRegisterError(null);
+
+      try {
+        const roleValue: RegisterPayload["role"] =
+          registerForm.role === "Landlord" ? 1 : 0;
+
+        const payload: RegisterPayload = {
+          displayName: registerForm.displayName,
+          email: registerForm.email,
+          password: registerForm.password,
+          phoneNumber: registerForm.phoneNumber,
+          role: roleValue,
+        };
+
+        const response: RegisterResponse = await register(payload);
+        toast.success(
+          response.message ?? "Registration successful. You may log in now.",
+        );
+        setActiveTab("login");
+        setRegisterForm(createInitialRegisterState());
+      } catch (error) {
+        const message = getErrorMessage(error);
+        setRegisterError(message);
+        toast.error(message);
+      } finally {
+        setRegisterSubmitting(false);
+      }
+    };
+
+    const handleLogout = async () => {
+      setLogoutSubmitting(true);
+      try {
+        const response: LogoutResponse = await logout();
+        toast.success(response.message ?? "Logged out successfully.");
+        navigate("/");
+      } catch (error) {
+        const message = getErrorMessage(error);
+        toast.error(message);
+      } finally {
+        setLogoutSubmitting(false);
+      }
+    };
+
+    const computedLinks = useMemo(() => {
+      const baseLinks = [...navigationLinks];
+      if (user) {
+        const hasAccount = baseLinks.some((link) => link.href === "/account");
+        if (!hasAccount) {
+          baseLinks.push({ href: "/account", label: "Account" });
+        }
+      }
+      return baseLinks;
+    }, [navigationLinks, user]);
+
+    const navItems = useMemo(
+      () =>
+        computedLinks.map((link) => ({
+          ...link,
+          active:
+            link.active ??
+            (link.href.startsWith("/") && location.pathname === link.href),
+        })),
+      [computedLinks, location.pathname],
+    );
+
     return (
-      <header
-        ref={combinedRef}
-        className={cn(
-          "bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 w-full border-b px-4 backdrop-blur md:px-6 [&_*]:no-underline",
-          className,
-        )}
-        {...props}
-      >
-        <div className="container mx-auto flex h-16 max-w-screen-2xl items-center justify-between gap-4">
-          {/* Left side */}
-          <div className="flex items-center gap-2">
-            {/* Mobile menu trigger */}
-            {isMobile && (
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    className="group hover:bg-accent hover:text-accent-foreground h-9 w-9"
-                    variant="ghost"
-                    size="icon"
-                  >
-                    <HamburgerIcon />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent align="start" className="w-48 p-2">
-                  <NavigationMenu className="max-w-none">
-                    <NavigationMenuList className="flex-col items-start gap-1">
-                      {navigationLinks.map((link, index) => (
-                        <NavigationMenuItem key={index} className="w-full">
-                          <button
-                            onClick={(e) => e.preventDefault()}
-                            className={cn(
-                              "hover:bg-accent hover:text-accent-foreground flex w-full cursor-pointer items-center rounded-md px-3 py-2 text-sm font-medium no-underline transition-colors",
-                              link.active
-                                ? "bg-accent text-accent-foreground"
-                                : "text-foreground/80",
-                            )}
-                          >
-                            {link.label}
-                          </button>
-                        </NavigationMenuItem>
-                      ))}
-                    </NavigationMenuList>
-                  </NavigationMenu>
-                </PopoverContent>
-              </Popover>
-            )}
-            {/* Main nav */}
-            <div className="flex items-center gap-6">
-              <button
-                onClick={(e) => e.preventDefault()}
-                className="text-primary hover:text-primary/90 flex cursor-pointer items-center space-x-2 transition-colors"
+      <Dialog open={dialogOpen} onOpenChange={handleDialogOpenChange}>
+        <header
+          ref={combinedRef}
+          className={cn(
+            "bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 w-full border-b px-4 backdrop-blur md:px-6 [&_*]:no-underline",
+            className,
+          )}
+          {...props}
+        >
+          <div className="container mx-auto flex h-16 max-w-screen-2xl items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              {isMobile && navItems.length > 0 && (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      className="group hover:bg-accent hover:text-accent-foreground h-9 w-9"
+                      variant="ghost"
+                      size="icon"
+                    >
+                      <HamburgerIcon />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent align="start" className="w-48 p-2">
+                    <NavigationMenu className="max-w-none">
+                      <NavigationMenuList className="flex-col items-start gap-1">
+                        {navItems.map((link) => (
+                          <NavigationMenuItem key={link.href} className="w-full">
+                            <Link
+                              to={link.href}
+                              className={cn(
+                                "hover:bg-accent hover:text-accent-foreground flex w-full cursor-pointer items-center rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                                link.active
+                                  ? "bg-accent text-accent-foreground"
+                                  : "text-foreground/80",
+                              )}
+                            >
+                              {link.label}
+                            </Link>
+                          </NavigationMenuItem>
+                        ))}
+                      </NavigationMenuList>
+                    </NavigationMenu>
+                  </PopoverContent>
+                </Popover>
+              )}
+              <Link
+                to={logoHref}
+                className="text-primary hover:text-primary/90 flex items-center space-x-2 transition-colors"
               >
                 <div className="text-2xl">{logo}</div>
                 <span className="hidden text-xl font-bold sm:inline-block">
                   Rentahan
                 </span>
-              </button>
-              {/* Navigation menu */}
-              {!isMobile && (
+              </Link>
+              {!isMobile && navItems.length > 0 && (
                 <NavigationMenu className="flex">
                   <NavigationMenuList className="gap-1">
-                    {navigationLinks.map((link, index) => (
-                      <NavigationMenuItem key={index}>
-                        <button
-                          onClick={(e) => e.preventDefault()}
+                    {navItems.map((link) => (
+                      <NavigationMenuItem key={link.href}>
+                        <Link
+                          to={link.href}
                           className={cn(
-                            "group hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground inline-flex h-9 w-max cursor-pointer items-center justify-center rounded-md px-4 py-2 text-sm font-medium no-underline transition-colors focus:outline-none disabled:pointer-events-none disabled:opacity-50",
+                            "group hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground inline-flex h-9 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors focus:outline-none",
                             link.active
                               ? "bg-accent text-accent-foreground"
                               : "text-foreground/80 hover:text-foreground",
                           )}
                         >
                           {link.label}
-                        </button>
+                        </Link>
                       </NavigationMenuItem>
                     ))}
                   </NavigationMenuList>
                 </NavigationMenu>
               )}
             </div>
+            <div className="flex items-center gap-3">
+              {user ? (
+                <>
+                  <Button asChild size="sm" variant="ghost">
+                    <Link to="/account">Account</Link>
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="h-9 rounded-md px-4 text-sm font-medium shadow-sm"
+                    variant="outline"
+                    onClick={handleLogout}
+                    disabled={logoutSubmitting || isRefreshing}
+                  >
+                    {logoutSubmitting || isRefreshing ? (
+                      <span className="flex items-center gap-2">
+                        <Loader2 className="size-4 animate-spin" />
+                        Logging out
+                      </span>
+                    ) : (
+                      "Log Out"
+                    )}
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button
+                    size="sm"
+                    className="h-9 rounded-md px-4 text-sm font-medium shadow-sm"
+                    type="button"
+                    onClick={handleSignIn}
+                  >
+                    {signInText}
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="hover:bg-accent hover:text-accent-foreground text-sm font-medium"
+                    variant="ghost"
+                    type="button"
+                    onClick={handleSignUp}
+                  >
+                    {ctaText}
+                  </Button>
+                </>
+              )}
+            </div>
           </div>
-          {/* Right side */}
-          <div className="flex items-center gap-3">
-            <Button
-              size="sm"
-              className="h-9 rounded-md px-4 text-sm font-medium shadow-sm"
-              onClick={(e) => {
-                e.preventDefault();
-                if (onSignInClick) onSignInClick();
-              }}
-            >
-              {signInText}
-            </Button>
-            <Button
-              size="sm"
-              className="hover:bg-accent hover:text-accent-foreground text-sm font-medium"
-              variant="ghost"
-              onClick={(e) => {
-                e.preventDefault();
-                if (onCtaClick) onCtaClick();
-              }}
-            >
-              {ctaText}
-            </Button>
-          </div>
-        </div>
-      </header>
+        </header>
+
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-semibold">
+              {activeTab === "login" ? "Welcome back" : "Create your account"}
+            </DialogTitle>
+            <DialogDescription>
+              {activeTab === "login"
+                ? "Log in to manage your properties and preferences."
+                : "Register to start listing properties or find your next home."}
+            </DialogDescription>
+          </DialogHeader>
+          <Tabs
+            value={activeTab}
+            onValueChange={(value) => setActiveTab(value as "login" | "register")}
+            className="mt-2"
+          >
+            <TabsList>
+              <TabsTrigger value="login">Login</TabsTrigger>
+              <TabsTrigger value="register">Sign up</TabsTrigger>
+            </TabsList>
+            <TabsContent value="login" className="mt-4">
+              <form className="space-y-4" onSubmit={handleLoginSubmit}>
+                <div className="space-y-1">
+                  <label className="text-sm font-medium">Email</label>
+                  <Input
+                    type="email"
+                    autoComplete="email"
+                    required
+                    value={loginForm.email}
+                    onChange={(event) =>
+                      setLoginForm((prev) => ({
+                        ...prev,
+                        email: event.target.value,
+                      }))
+                    }
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-sm font-medium">Password</label>
+                  <Input
+                    type="password"
+                    autoComplete="current-password"
+                    required
+                    value={loginForm.password}
+                    onChange={(event) =>
+                      setLoginForm((prev) => ({
+                        ...prev,
+                        password: event.target.value,
+                      }))
+                    }
+                  />
+                </div>
+                {loginError && (
+                  <p className="text-destructive text-sm">{loginError}</p>
+                )}
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={loginSubmitting || isRefreshing}
+                >
+                  {loginSubmitting || isRefreshing ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <Loader2 className="size-4 animate-spin" />
+                      Signing in
+                    </span>
+                  ) : (
+                    "Continue"
+                  )}
+                </Button>
+              </form>
+            </TabsContent>
+            <TabsContent value="register" className="mt-4">
+              <form className="space-y-4" onSubmit={handleRegisterSubmit}>
+                <div className="space-y-1">
+                  <label className="text-sm font-medium">Full name</label>
+                  <Input
+                    type="text"
+                    autoComplete="name"
+                    required
+                    value={registerForm.displayName}
+                    onChange={(event) =>
+                      setRegisterForm((prev) => ({
+                        ...prev,
+                        displayName: event.target.value,
+                      }))
+                    }
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-sm font-medium">Email</label>
+                  <Input
+                    type="email"
+                    autoComplete="email"
+                    required
+                    value={registerForm.email}
+                    onChange={(event) =>
+                      setRegisterForm((prev) => ({
+                        ...prev,
+                        email: event.target.value,
+                      }))
+                    }
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-sm font-medium">Phone number</label>
+                  <Input
+                    type="tel"
+                    autoComplete="tel"
+                    required
+                    value={registerForm.phoneNumber}
+                    onChange={(event) =>
+                      setRegisterForm((prev) => ({
+                        ...prev,
+                        phoneNumber: event.target.value,
+                      }))
+                    }
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-sm font-medium">Password</label>
+                  <Input
+                    type="password"
+                    autoComplete="new-password"
+                    required
+                    value={registerForm.password}
+                    onChange={(event) =>
+                      setRegisterForm((prev) => ({
+                        ...prev,
+                        password: event.target.value,
+                      }))
+                    }
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-sm font-medium">Account type</label>
+                  <select
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    value={registerForm.role}
+                    onChange={(event) =>
+                      setRegisterForm((prev) => ({
+                        ...prev,
+                        role: event.target.value as RoleOption,
+                      }))
+                    }
+                  >
+                    {roles.map((role) => (
+                      <option key={role} value={role}>
+                        {role}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                {registerError && (
+                  <p className="text-destructive text-sm">{registerError}</p>
+                )}
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={registerSubmitting}
+                >
+                  {registerSubmitting ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <Loader2 className="size-4 animate-spin" />
+                      Creating account
+                    </span>
+                  ) : (
+                    "Create account"
+                  )}
+                </Button>
+              </form>
+            </TabsContent>
+          </Tabs>
+        </DialogContent>
+      </Dialog>
     );
   },
 );
@@ -275,3 +652,7 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
 Navbar01.displayName = "Navbar01";
 
 export { Logo, HamburgerIcon };
+
+
+
+

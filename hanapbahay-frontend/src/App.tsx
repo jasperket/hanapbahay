@@ -1,21 +1,10 @@
-import { BrowserRouter, Route, Routes } from "react-router";
+import { RouterProvider } from "react-router";
 import "./App.css";
 import "@fontsource-variable/inter";
-import Home from "./pages/Home";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { router } from "./router";
 
-const queryClient = new QueryClient();
-
-function App() {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />} />
-        </Routes>
-      </BrowserRouter>
-    </QueryClientProvider>
-  );
-}
+const App = () => {
+  return <RouterProvider router={router} />;
+};
 
 export default App;
