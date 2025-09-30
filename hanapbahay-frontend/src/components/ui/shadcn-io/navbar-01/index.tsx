@@ -245,9 +245,8 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
           {/* Right side */}
           <div className="flex items-center gap-3">
             <Button
-              variant="ghost"
               size="sm"
-              className="hover:bg-accent hover:text-accent-foreground text-sm font-medium"
+              className="h-9 rounded-md px-4 text-sm font-medium shadow-sm"
               onClick={(e) => {
                 e.preventDefault();
                 if (onSignInClick) onSignInClick();
@@ -257,7 +256,8 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
             </Button>
             <Button
               size="sm"
-              className="h-9 rounded-md px-4 text-sm font-medium shadow-sm"
+              className="hover:bg-accent hover:text-accent-foreground text-sm font-medium"
+              variant="ghost"
               onClick={(e) => {
                 e.preventDefault();
                 if (onCtaClick) onCtaClick();
