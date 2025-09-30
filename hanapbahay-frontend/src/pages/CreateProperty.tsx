@@ -1,4 +1,11 @@
-import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
+import {
+  ChangeEvent,
+  FormEvent,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useNavigate } from "react-router";
 import { isAxiosError } from "axios";
 import { toast } from "sonner";
@@ -6,11 +13,14 @@ import { Navbar01 } from "@/components/ui/shadcn-io/navbar-01";
 import { Dropzone, DropzoneContent, DropzoneEmptyState } from "@/components/ui/shadcn-io/dropzone";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { createProperty } from "@/services/propertyClient";
+import { createProperty, updateProperty } from "@/services/propertyClient";
 import {
   listingStatusOptions,
   propertyTypeOptions,
   type CreatePropertyPayload,
+  type Property,
+  type PropertyMedia,
+  type UpdatePropertyPayload,
 } from "@/types/property";
 
 interface FormState {
@@ -49,6 +59,34 @@ const initialFormState: FormState = {
 
 const maxGalleryImages = 10;
 
+type PropertyFormMode = "create" | "edit";
+
+interface PropertyFormProps {
+  mode?: PropertyFormMode;
+  propertyId?: number;
+  initialProperty?: Property | null;
+}
+
+const buildFormStateFromProperty = (property: Property): FormState => ({
+  title: property.title,
+  description: property.description ?? "",
+  propertyType: String(property.propertyType),
+  province: property.province,
+  city: property.city,
+  barangay: property.barangay ?? "",
+  zipCode: property.zipCode ?? "",
+  targetLocation: property.targetLocation ?? "",
+  landmark: property.landmark ?? "",
+  monthlyPrice: property.monthlyPrice.toString(),
+  maxPersons:
+    typeof property.maxPersons === "number"
+      ? property.maxPersons.toString()
+      : "",
+  moveInDate: property.moveInDate ? property.moveInDate.slice(0, 10) : "",
+  status: String(property.status),
+  amenityCodes: property.amenityCodes.join(", "),
+});
+
 const extractErrorMessage = (error: unknown) => {
   if (isAxiosError(error)) {
     const data = error.response?.data as Record<string, unknown> | undefined;
@@ -78,13 +116,27 @@ const extractErrorMessage = (error: unknown) => {
   return "Unexpected error occurred.";
 };
 
-const CreateProperty = () => {
+const PropertyForm = ({
+  mode = "create",
+  propertyId,
+  initialProperty,
+}: PropertyFormProps) => {
   const navigate = useNavigate();
   const [formState, setFormState] = useState<FormState>(initialFormState);
   const [coverImage, setCoverImage] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [galleryImages, setGalleryImages] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [existingCover, setExistingCover] = useState<PropertyMedia | null>(
+    null,
+  );
+  const [existingGallery, setExistingGallery] = useState<PropertyMedia[]>([]);
+  const [removedImageIds, setRemovedImageIds] = useState<number[]>([]);
+
+  const initialPropertyRef = useRef<Property | null>(null);
+  const originalCoverRef = useRef<PropertyMedia | null>(null);
+  const originalCoverRemovedRef = useRef(false);
 
   const selectableStatuses = useMemo(
     () => listingStatusOptions.filter((option) => option.value === 0 || option.value === 1),
@@ -105,6 +157,40 @@ const CreateProperty = () => {
     };
   }, [coverImage]);
 
+  useEffect(() => {
+    if (mode !== "edit" || !initialProperty) {
+      return;
+    }
+
+    initialPropertyRef.current = initialProperty;
+    setFormState(buildFormStateFromProperty(initialProperty));
+
+    const cover = initialProperty.media.find((media) => media.isCover) ?? null;
+    setExistingCover(cover);
+    originalCoverRef.current = cover;
+    originalCoverRemovedRef.current = false;
+
+    const gallery = initialProperty.media.filter((media) => !media.isCover);
+    setExistingGallery(gallery);
+
+    setCoverImage(null);
+    setCoverPreview(null);
+    setGalleryImages([]);
+    setRemovedImageIds([]);
+  }, [mode, initialProperty]);
+
+  const addRemovedImageId = (id: number) => {
+    setRemovedImageIds((previous) =>
+      previous.includes(id) ? previous : [...previous, id],
+    );
+  };
+
+  const restoreRemovedImageId = (id: number) => {
+    setRemovedImageIds((previous) =>
+      previous.filter((value) => value !== id),
+    );
+  };
+
   const handleInputChange = (field: keyof FormState) =>
     (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
       const value = event.target.value;
@@ -116,9 +202,17 @@ const CreateProperty = () => {
 
   const handleCoverDrop = (acceptedFiles: File[]) => {
     const [file] = acceptedFiles;
-    if (file) {
-      setCoverImage(file);
+    if (!file) {
+      return;
     }
+
+    if (existingCover) {
+      addRemovedImageId(existingCover.id);
+      setExistingCover(null);
+      originalCoverRemovedRef.current = false;
+    }
+
+    setCoverImage(file);
   };
 
   const handleGalleryDrop = (acceptedFiles: File[]) => {
@@ -133,12 +227,18 @@ const CreateProperty = () => {
         fileMap.set(key, file);
       });
 
+      let added = 0;
       acceptedFiles.forEach((file) => {
         const key = `${file.name}-${file.size}-${file.lastModified}`;
         if (!fileMap.has(key) && fileMap.size < maxGalleryImages) {
           fileMap.set(key, file);
+          added += 1;
         }
       });
+
+      if (added === 0 && fileMap.size >= maxGalleryImages) {
+        toast.error(`You can only add up to ${maxGalleryImages} gallery images.`);
+      }
 
       return Array.from(fileMap.values());
     });
@@ -148,10 +248,61 @@ const CreateProperty = () => {
     setGalleryImages((previous) => previous.filter((_, position) => position !== index));
   };
 
+  const handleRemoveExistingGalleryImage = (mediaId: number) => {
+    setExistingGallery((previous) => previous.filter((media) => media.id !== mediaId));
+    addRemovedImageId(mediaId);
+  };
+
+  const handleRemoveExistingCover = () => {
+    if (!existingCover) {
+      return;
+    }
+
+    addRemovedImageId(existingCover.id);
+    setExistingCover(null);
+    originalCoverRemovedRef.current = true;
+  };
+
+  const handleRemoveNewCover = () => {
+    setCoverImage(null);
+    setCoverPreview(null);
+
+    if (mode === "edit") {
+      const originalCover = originalCoverRef.current;
+      if (originalCover && !originalCoverRemovedRef.current) {
+        setExistingCover(originalCover);
+        restoreRemovedImageId(originalCover.id);
+      }
+    }
+  };
+
   const handleResetForm = () => {
+    if (mode === "edit" && initialPropertyRef.current) {
+      const property = initialPropertyRef.current;
+      setFormState(buildFormStateFromProperty(property));
+
+      const cover = property.media.find((media) => media.isCover) ?? null;
+      setExistingCover(cover);
+      originalCoverRef.current = cover;
+      originalCoverRemovedRef.current = false;
+
+      const gallery = property.media.filter((media) => !media.isCover);
+      setExistingGallery(gallery);
+
+      setCoverImage(null);
+      setCoverPreview(null);
+      setGalleryImages([]);
+      setRemovedImageIds([]);
+      return;
+    }
+
     setFormState(initialFormState);
     setCoverImage(null);
+    setCoverPreview(null);
     setGalleryImages([]);
+    setExistingCover(null);
+    setExistingGallery([]);
+    setRemovedImageIds([]);
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -166,12 +317,6 @@ const CreateProperty = () => {
       toast.error("Province and city are required.");
       return;
     }
-
-    if (!coverImage) {
-      toast.error("Please upload a cover image.");
-      return;
-    }
-
     const monthlyPrice = Number.parseFloat(formState.monthlyPrice);
     if (!Number.isFinite(monthlyPrice) || monthlyPrice <= 0) {
       toast.error("Monthly price must be greater than zero.");
@@ -193,7 +338,62 @@ const CreateProperty = () => {
       .map((code) => code.trim())
       .filter((code) => code.length > 0);
 
-    const payload: CreatePropertyPayload = {
+    if (mode === "edit") {
+      if (!propertyId) {
+        toast.error("Unable to determine property to update.");
+        return;
+      }
+
+      const hasImages =
+        Boolean(existingCover) ||
+        existingGallery.length > 0 ||
+        Boolean(coverImage) ||
+        galleryImages.length > 0;
+
+      if (!hasImages) {
+        toast.error("Please keep or upload at least one image for the listing.");
+        return;
+      }
+
+      const updatePayload: UpdatePropertyPayload = {
+        title: formState.title.trim(),
+        description: formState.description.trim() || undefined,
+        propertyType: Number.parseInt(formState.propertyType, 10) as UpdatePropertyPayload["propertyType"],
+        province: formState.province.trim(),
+        city: formState.city.trim(),
+        barangay: formState.barangay.trim() || undefined,
+        zipCode: formState.zipCode.trim() || undefined,
+        targetLocation: formState.targetLocation.trim() || undefined,
+        landmark: formState.landmark.trim() || undefined,
+        monthlyPrice,
+        maxPersons: maxPersonsValue,
+        moveInDate: formState.moveInDate || undefined,
+        status: Number.parseInt(formState.status, 10) as UpdatePropertyPayload["status"],
+        amenityCodes,
+        newCoverImage: coverImage ?? undefined,
+        newGalleryImages: galleryImages,
+        removeImageIds: removedImageIds,
+      };
+
+      setIsSubmitting(true);
+      try {
+        await updateProperty(propertyId, updatePayload);
+        toast.success("Property updated successfully.");
+        navigate("/properties");
+      } catch (error) {
+        toast.error(extractErrorMessage(error));
+      } finally {
+        setIsSubmitting(false);
+      }
+      return;
+    }
+
+    if (!coverImage) {
+      toast.error("Please upload a cover image.");
+      return;
+    }
+
+    const createPayload: CreatePropertyPayload = {
       title: formState.title.trim(),
       description: formState.description.trim() || undefined,
       propertyType: Number.parseInt(formState.propertyType, 10) as CreatePropertyPayload["propertyType"],
@@ -214,10 +414,10 @@ const CreateProperty = () => {
 
     setIsSubmitting(true);
     try {
-      await createProperty(payload);
+      await createProperty(createPayload);
       toast.success("Property created successfully.");
       handleResetForm();
-      navigate("/account");
+      navigate("/properties");
     } catch (error) {
       toast.error(extractErrorMessage(error));
     } finally {
@@ -231,9 +431,13 @@ const CreateProperty = () => {
       <main className="bg-muted/40">
         <section className="container mx-auto max-w-4xl px-4 py-10">
           <header className="mb-8">
-            <h1 className="text-3xl font-semibold">Create a property listing</h1>
+            <h1 className="text-3xl font-semibold">
+              {mode === "edit" ? "Update property listing" : "Create a property listing"}
+            </h1>
             <p className="text-muted-foreground mt-2 text-sm">
-              Provide the property details, upload a cover image, and include any additional gallery images.
+              {mode === "edit"
+                ? "Review the details below, adjust anything that has changed, and save your updates."
+                : "Provide the property details, upload a cover image, and include any additional gallery images."}
             </p>
           </header>
           <form className="space-y-10" onSubmit={handleSubmit}>
@@ -441,17 +645,27 @@ const CreateProperty = () => {
                     Upload a single cover image. This will be the primary photo for the listing.
                   </p>
                 </div>
-                {coverImage && (
+                {coverImage ? (
                   <Button
                     type="button"
                     variant="ghost"
                     size="sm"
-                    onClick={() => setCoverImage(null)}
+                    onClick={handleRemoveNewCover}
                     disabled={isSubmitting}
                   >
                     Remove
                   </Button>
-                )}
+                ) : mode === "edit" && existingCover ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleRemoveExistingCover}
+                    disabled={isSubmitting}
+                  >
+                    Remove
+                  </Button>
+                ) : null}
               </div>
               <Dropzone
                 accept={{ "image/*": [] }}
@@ -469,6 +683,19 @@ const CreateProperty = () => {
                     />
                     <p className="text-muted-foreground text-sm">
                       Drag and drop or click to replace the cover image.
+                    </p>
+                  </div>
+                ) : existingCover ? (
+                  <div className="flex w-full flex-col items-center gap-3">
+                    <img
+                      src={existingCover.url}
+                      alt="Existing cover"
+                      className="h-48 w-full rounded-md object-cover"
+                    />
+                    <p className="text-muted-foreground text-sm">
+                      {mode === "edit"
+                        ? "Click to replace the current cover image."
+                        : "Drag and drop or click to upload a cover image."}
                     </p>
                   </div>
                 ) : (
@@ -497,6 +724,44 @@ const CreateProperty = () => {
                   </Button>
                 )}
               </div>
+              {mode === "edit" && existingGallery.length > 0 && (
+                <div className="space-y-3 rounded-md border p-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-medium">Existing images</p>
+                    <p className="text-muted-foreground text-xs">
+                      Removed images are deleted after you save changes.
+                    </p>
+                  </div>
+                  <ul className="grid gap-3 sm:grid-cols-2">
+                    {existingGallery.map((media) => (
+                      <li
+                        key={media.id}
+                        className="flex items-center justify-between gap-3 rounded-md border px-3 py-2"
+                      >
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={media.url}
+                            alt={`Gallery image ${media.id}`}
+                            className="h-16 w-16 rounded-md object-cover"
+                          />
+                          <span className="truncate text-xs text-muted-foreground">
+                            Image #{media.id}
+                          </span>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleRemoveExistingGalleryImage(media.id)}
+                          disabled={isSubmitting}
+                        >
+                          Remove
+                        </Button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
               <Dropzone
                 accept={{ "image/*": [] }}
                 maxFiles={maxGalleryImages}
@@ -540,10 +805,16 @@ const CreateProperty = () => {
                 onClick={handleResetForm}
                 disabled={isSubmitting}
               >
-                Reset
+                {mode === "edit" ? "Revert changes" : "Reset"}
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Creating..." : "Create property"}
+                {isSubmitting
+                  ? mode === "edit"
+                    ? "Saving..."
+                    : "Creating..."
+                  : mode === "edit"
+                    ? "Save changes"
+                    : "Create property"}
               </Button>
             </div>
           </form>
@@ -553,4 +824,9 @@ const CreateProperty = () => {
   );
 };
 
+const CreateProperty = () => {
+  return <PropertyForm mode="create" />;
+};
+
 export default CreateProperty;
+export { PropertyForm };

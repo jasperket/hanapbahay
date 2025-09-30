@@ -9,6 +9,8 @@ import LandlordRoute from "@/routes/LandlordRoute";
 import Home from "@/pages/Home";
 import Account from "@/pages/Account";
 import CreateProperty from "@/pages/CreateProperty";
+import LandlordProperties from "@/pages/LandlordProperties";
+import EditProperty from "@/pages/EditProperty";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -17,7 +19,9 @@ const router = createBrowserRouter(
       <Route element={<ProtectedRoute />}>
         <Route path="account" element={<Account />} />
         <Route element={<LandlordRoute />}>
+          <Route path="properties" element={<LandlordProperties />} />
           <Route path="properties/new" element={<CreateProperty />} />
+          <Route path="properties/:propertyId/edit" element={<EditProperty />} />
         </Route>
       </Route>
     </Route>,

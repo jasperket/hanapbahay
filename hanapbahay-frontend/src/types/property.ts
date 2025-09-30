@@ -69,3 +69,10 @@ export interface CreatePropertyPayload {
   coverImage: File;
   galleryImages: File[];
 }
+
+export interface UpdatePropertyPayload
+  extends Omit<CreatePropertyPayload, "coverImage" | "galleryImages"> {
+  newCoverImage?: File;
+  newGalleryImages: File[];
+  removeImageIds: number[];
+}
