@@ -42,11 +42,11 @@
 }
 
 @theme {
-  --color-rentahan-text: "#14130b";
-  --color-rentahan-background: "#fcfcf9";
-  --color-rentahan-primary: "#a9a561";
-  --color-rentahan-secondary: "#b1cea6";
-  --color-rentahan-accent: "#8cbf8a";
+  --color-rentahan-text: #14130b;
+  --color-rentahan-background: #fcfcf9;
+  --color-rentahan-primary: #a9a561;
+  --color-rentahan-secondary: #b1cea6;
+  --color-rentahan-accent: #8cbf8a;
 }
 
 :root {
@@ -125,4 +125,9 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+body {
+  background-color: var(--color-rentahan-background);
+  font-family: "Inter Variable", sans-serif;
 }

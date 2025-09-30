@@ -1,9 +1,12 @@
 import "./App.css";
+import "@fontsource-variable/inter";
 
 function App() {
   return (
     <>
-      <h1 className="text-7xl font-bold">Tailwind works!</h1>
+      <header>
+        <p className="text-rentahan-text text-2xl font-bold">Rentahan</p>
+      </header>
     </>
   );
 }
