@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using hanapbahay_backend.Models.Entities;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace hanapbahay_backend.Dto.Property;
@@ -33,6 +34,8 @@ public class AddPropertyRequest
 
     public ListingStatus Status { get; set; } = ListingStatus.Draft;
 
-    public string[] AmenityCodes { get; set; } = Array.Empty<string>();
+
+    public List<string> AmenityCodes { get; set; } = new List<string>();
+
 
 }

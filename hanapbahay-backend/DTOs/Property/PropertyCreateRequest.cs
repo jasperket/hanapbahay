@@ -3,6 +3,6 @@ namespace hanapbahay_backend.Dto.Property;
 
 public class PropertyCreateRequest : AddPropertyRequest
 {
-    public IFormFile[] Images { get; set; } = Array.Empty<IFormFile>();
+    public IEnumerable<IFormFile> Images { get; set; } = Array.Empty<IFormFile>();
 }
 
