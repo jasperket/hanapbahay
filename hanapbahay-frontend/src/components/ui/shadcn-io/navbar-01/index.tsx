@@ -324,16 +324,14 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
       }
     };
 
+    const isLandlord = useMemo(
+      () => user?.roles.some((role) => role.toLowerCase() === "landlord") ?? false,
+      [user],
+    );
+
     const computedLinks = useMemo(() => {
-      const baseLinks = [...navigationLinks];
-      if (user) {
-        const hasAccount = baseLinks.some((link) => link.href === "/account");
-        if (!hasAccount) {
-          baseLinks.push({ href: "/account", label: "Account" });
-        }
-      }
-      return baseLinks;
-    }, [navigationLinks, user]);
+      return [...navigationLinks];
+    }, [navigationLinks]);
 
     const navItems = useMemo(
       () =>
@@ -426,9 +424,15 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
             <div className="flex items-center gap-3">
               {user ? (
                 <>
-                  <Button asChild size="sm" variant="ghost">
-                    <Link to="/account">Account</Link>
-                  </Button>
+                  {isLandlord && (
+                    <Button
+                      asChild
+                      size="sm"
+                      className="h-9 rounded-md px-4 text-sm font-medium shadow-sm"
+                    >
+                      <Link to="/properties/new">Add property</Link>
+                    </Button>
+                  )}
                   <Button
                     size="sm"
                     className="h-9 rounded-md px-4 text-sm font-medium shadow-sm"
