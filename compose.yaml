@@ -39,6 +39,24 @@ services:
       watch:
         - action: rebuild
           path: ./hanapbahay-backend
+  client:
+    build:
+      context: ./hanapbahay-frontend
+      dockerfile: Dockerfile.dev
+    ports:
+      - "5173:5173"
+    develop:
+      watch:
+        - action: sync
+          path: ./hanapbahay-frontend
+          target: /app
+        - action: rebuild
+          path: ./hanapbahay-frontend/package.json
+    depends_on:
+      - db
+      - server
+    environment:
+      - VITE_API_URL=http://localhost:8080/api
 
 volumes:
   db_data:
