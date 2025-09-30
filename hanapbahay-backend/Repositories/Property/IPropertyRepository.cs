@@ -7,4 +7,5 @@ public interface IPropertyRepository
 {
     Task AddPropertyAsync(AddPropertyRequest request);
     Task<IEnumerable<PropertyResponse>> GetPropertiesAsync();
+    Task<IEnumerable<PropertyResponse>> GetPropertiesByLandlordAsync(Guid landlordId);
 }

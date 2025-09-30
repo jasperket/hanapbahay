@@ -26,6 +26,18 @@ public class PropertyController : ControllerBase
         return Ok(properties);
     }
 
+    [HttpGet("mine")]
+    [Authorize(Roles = "Landlord")]
+    public async Task<IActionResult> GetLandlordProperties()
+    {
+        var landlordId = GetUserId();
+        if (landlordId is null)
+            return Unauthorized();
+
+        var properties = await _propertyService.GetLandlordPropertiesAsync(landlordId.Value);
+        return Ok(properties);
+    }
+
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetProperty(int id)
     {

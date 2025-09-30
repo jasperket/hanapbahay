@@ -34,4 +34,19 @@ public class PropertyRepository : GenericRepository<Models.Entities.Property>, I
 
         return _mapper.Map<IEnumerable<PropertyResponse>>(properties);
     }
+
+    public async Task<IEnumerable<PropertyResponse>> GetPropertiesByLandlordAsync(Guid landlordId)
+    {
+        var properties = await _context.Properties
+            .AsNoTracking()
+            .Where(p => !p.IsDeleted && p.LandlordId == landlordId)
+            .Include(p => p.Landlord)
+            .Include(p => p.PropertyAmenities)
+                .ThenInclude(pa => pa.Amenity)
+            .Include(p => p.Media)
+            .OrderByDescending(p => p.CreatedAt)
+            .ToListAsync();
+
+        return _mapper.Map<IEnumerable<PropertyResponse>>(properties);
+    }
 }

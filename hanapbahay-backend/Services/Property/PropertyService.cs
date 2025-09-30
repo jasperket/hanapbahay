@@ -40,6 +40,12 @@ public class PropertyService : IPropertyService
         return properties;
     }
 
+    public async Task<IEnumerable<PropertyResponse>> GetLandlordPropertiesAsync(Guid landlordId)
+    {
+        var properties = await _propertyRepository.GetPropertiesByLandlordAsync(landlordId);
+        return properties;
+    }
+
     public async Task<PropertyResponse?> GetPropertyByIdAsync(int propertyId)
     {
         var property = await _context.Properties
