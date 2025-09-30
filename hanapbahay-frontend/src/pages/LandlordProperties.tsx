@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import type { KeyboardEvent } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { Navbar01 } from "@/components/ui/shadcn-io/navbar-01";
@@ -72,6 +73,24 @@ const LandlordProperties = () => {
     }
   };
 
+  const handleView = (propertyId: number) => {
+    navigate(`/properties/${propertyId}`);
+  };
+
+  const handleCardKeyDown = (
+    event: KeyboardEvent<HTMLElement>,
+    propertyId: number,
+  ) => {
+    if (event.target !== event.currentTarget) {
+      return;
+    }
+
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      handleView(propertyId);
+    }
+  };
+
   const handleEdit = (propertyId: number) => {
     navigate(`/properties/${propertyId}/edit`);
   };
@@ -110,7 +129,12 @@ const LandlordProperties = () => {
                 return (
                   <article
                     key={property.id}
-                    className="flex flex-col gap-4 rounded-lg border bg-background p-4 shadow-sm sm:flex-row"
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`View details for ${property.title}`}
+                    onClick={() => handleView(property.id)}
+                    onKeyDown={(event) => handleCardKeyDown(event, property.id)}
+                    className="flex flex-col gap-4 rounded-lg border bg-background p-4 shadow-sm transition hover:border-primary hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:flex-row cursor-pointer"
                   >
                     <div className="sm:w-48">
                       {cover ? (
@@ -168,7 +192,10 @@ const LandlordProperties = () => {
                         <Button
                           type="button"
                           variant="outline"
-                          onClick={() => handleEdit(property.id)}
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            handleEdit(property.id);
+                          }}
                           disabled={deletingId === property.id}
                         >
                           Edit
@@ -176,7 +203,10 @@ const LandlordProperties = () => {
                         <Button
                           type="button"
                           variant="destructive"
-                          onClick={() => handleDelete(property.id)}
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            handleDelete(property.id);
+                          }}
                           disabled={deletingId === property.id}
                         >
                           {deletingId === property.id ? "Deleting..." : "Delete"}

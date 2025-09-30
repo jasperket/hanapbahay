@@ -193,6 +193,7 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
     const [loginSubmitting, setLoginSubmitting] = useState(false);
     const [registerSubmitting, setRegisterSubmitting] = useState(false);
     const [logoutSubmitting, setLogoutSubmitting] = useState(false);
+    const [pendingLandlordRedirect, setPendingLandlordRedirect] = useState(false);
 
     useEffect(() => {
       const checkWidth = () => {
@@ -261,16 +262,26 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
       event.preventDefault();
       setLoginSubmitting(true);
       setLoginError(null);
+      setPendingLandlordRedirect(false);
 
       try {
         const response: LoginResponse = await login(loginForm);
         toast.success(response.message ?? "Logged in successfully.");
         resetForms();
         setDialogOpen(false);
+
+        const normalizedRole = response.role?.toLowerCase();
+        if (normalizedRole === "landlord") {
+          navigate("/properties");
+          setPendingLandlordRedirect(false);
+        } else {
+          setPendingLandlordRedirect(true);
+        }
       } catch (error) {
         const message = getErrorMessage(error);
         setLoginError(message);
         toast.error(message);
+        setPendingLandlordRedirect(false);
       } finally {
         setLoginSubmitting(false);
       }
@@ -315,6 +326,7 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
       try {
         const response: LogoutResponse = await logout();
         toast.success(response.message ?? "Logged out successfully.");
+        setPendingLandlordRedirect(false);
         navigate("/");
       } catch (error) {
         const message = getErrorMessage(error);
@@ -329,17 +341,41 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
       [user],
     );
 
+    useEffect(() => {
+      if (!pendingLandlordRedirect) {
+        return;
+      }
+
+      if (!user) {
+        return;
+      }
+
+      if (isLandlord) {
+        navigate("/properties");
+      }
+
+      setPendingLandlordRedirect(false);
+    }, [isLandlord, navigate, pendingLandlordRedirect, user]);
+
     const computedLinks = useMemo(() => {
-      return [...navigationLinks];
-    }, [navigationLinks]);
+      const links = [...navigationLinks];
+
+      if (isLandlord && !links.some((link) => link.href === "/properties")) {
+        links.unshift({ href: "/properties", label: "Properties" });
+      }
+
+      return links;
+    }, [isLandlord, navigationLinks]);
 
     const navItems = useMemo(
       () =>
         computedLinks.map((link) => ({
           ...link,
           active:
-            link.active ??
-            (link.href.startsWith("/") && location.pathname === link.href),
+            link.active
+              ?? (link.href.startsWith("/")
+                && (location.pathname === link.href
+                  || (link.href !== "/" && location.pathname.startsWith(`${link.href}/`)))),
         })),
       [computedLinks, location.pathname],
     );
@@ -391,7 +427,7 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
                 </Popover>
               )}
               <Link
-                to={logoHref}
+                to={isLandlord ? "/properties" : logoHref}
                 className="text-primary hover:text-primary/90 flex items-center space-x-2 transition-colors"
               >
                 <div className="text-2xl">{logo}</div>
