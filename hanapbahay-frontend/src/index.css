@@ -41,6 +41,14 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+@theme {
+  --color-rentahan-text: "#14130b";
+  --color-rentahan-background: "#fcfcf9";
+  --color-rentahan-primary: "#a9a561";
+  --color-rentahan-secondary: "#b1cea6";
+  --color-rentahan-accent: "#8cbf8a";
+}
+
 :root {
   --radius: 0.625rem;
   --background: oklch(1 0 0);
