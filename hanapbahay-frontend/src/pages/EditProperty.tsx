@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 import { isAxiosError } from "axios";
 import { Navbar01 } from "@/components/ui/shadcn-io/navbar-01";
-import { PropertyForm } from "@/pages/CreateProperty";
+import { PropertyForm } from "@/components/property/form";
 import { getPropertyById } from "@/services/propertyClient";
 import type { Property } from "@/types/property";
 
@@ -13,7 +13,9 @@ const EditProperty = () => {
   const [property, setProperty] = useState<Property | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const parsedPropertyId = propertyId ? Number.parseInt(propertyId, 10) : Number.NaN;
+  const parsedPropertyId = propertyId
+    ? Number.parseInt(propertyId, 10)
+    : Number.NaN;
 
   useEffect(() => {
     if (Number.isNaN(parsedPropertyId)) {
@@ -71,4 +73,3 @@ const EditProperty = () => {
 };
 
 export default EditProperty;
-

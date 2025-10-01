@@ -7,8 +7,7 @@ export const propertyTypeOptions = [
   { label: "Room", value: 5 },
 ] as const;
 
-export type PropertyTypeValue =
-  (typeof propertyTypeOptions)[number]["value"];
+export type PropertyTypeValue = (typeof propertyTypeOptions)[number]["value"];
 
 export const listingStatusOptions = [
   { label: "Draft", value: 0 },
@@ -19,8 +18,7 @@ export const listingStatusOptions = [
   { label: "Removed", value: 5 },
 ] as const;
 
-export type ListingStatusValue =
-  (typeof listingStatusOptions)[number]["value"];
+export type ListingStatusValue = (typeof listingStatusOptions)[number]["value"];
 
 export interface PropertyMedia {
   id: number;
@@ -75,4 +73,21 @@ export interface UpdatePropertyPayload
   newCoverImage?: File;
   newGalleryImages: File[];
   removeImageIds: number[];
+}
+
+export interface FormState {
+  title: string;
+  description: string;
+  propertyType: string;
+  province: string;
+  city: string;
+  barangay: string;
+  zipCode: string;
+  targetLocation: string;
+  landmark: string;
+  monthlyPrice: string;
+  maxPersons: string;
+  moveInDate: string;
+  status: string;
+  amenityCodes: string;
 }
