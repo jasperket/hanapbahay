@@ -10,18 +10,8 @@ import {
   propertyTypeOptions,
   type Property,
 } from "@/types/property";
-
-const currencyFormatter = new Intl.NumberFormat("en-PH", {
-  style: "currency",
-  currency: "PHP",
-  maximumFractionDigits: 2,
-});
-
-const dateFormatter = new Intl.DateTimeFormat("en-PH", {
-  year: "numeric",
-  month: "short",
-  day: "numeric",
-});
+import { currencyFormatter, dateFormatter } from "@/utils/formatters";
+import { ArrowLeft } from "lucide-react";
 
 const formatOptionalDate = (value?: string | null) => {
   if (!value) {
@@ -42,14 +32,20 @@ const LandlordPropertyDetails = () => {
   const [property, setProperty] = useState<Property | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const parsedPropertyId = propertyId ? Number.parseInt(propertyId, 10) : Number.NaN;
+  const parsedPropertyId = propertyId
+    ? Number.parseInt(propertyId, 10)
+    : Number.NaN;
 
   const statusLookup = useMemo(() => {
-    return new Map(listingStatusOptions.map((option) => [option.value, option.label]));
+    return new Map(
+      listingStatusOptions.map((option) => [option.value, option.label]),
+    );
   }, []);
 
   const propertyTypeLookup = useMemo(() => {
-    return new Map(propertyTypeOptions.map((option) => [option.value, option.label]));
+    return new Map(
+      propertyTypeOptions.map((option) => [option.value, option.label]),
+    );
   }, []);
 
   useEffect(() => {
@@ -101,18 +97,31 @@ const LandlordPropertyDetails = () => {
         <Navbar01 />
         <main className="bg-muted/40">
           <section className="container mx-auto max-w-5xl px-4 py-10">
-            <Button variant="outline" onClick={() => navigate("/properties")}>Back to properties</Button>
-            <p className="text-muted-foreground mt-6">Loading property details...</p>
+            <Button
+              variant="ghost"
+              className="flex gap-4"
+              onClick={() => navigate("/properties")}
+            >
+              <ArrowLeft />
+              Back to properties
+            </Button>
+            <p className="text-muted-foreground mt-6">
+              Loading property details...
+            </p>
           </section>
         </main>
       </>
     );
   }
 
-  const coverImage = property.media.find((media) => media.isCover) ?? property.media[0];
-  const galleryImages = property.media.filter((media) => media.id !== coverImage?.id);
+  const coverImage =
+    property.media.find((media) => media.isCover) ?? property.media[0];
+  const galleryImages = property.media.filter(
+    (media) => media.id !== coverImage?.id,
+  );
   const statusLabel = statusLookup.get(property.status) ?? "Unknown";
-  const propertyTypeLabel = propertyTypeLookup.get(property.propertyType) ?? "Unknown";
+  const propertyTypeLabel =
+    propertyTypeLookup.get(property.propertyType) ?? "Unknown";
   const moveInDateLabel = formatOptionalDate(property.moveInDate);
   const createdAtLabel = formatOptionalDate(property.createdAt);
 
@@ -122,7 +131,12 @@ const LandlordPropertyDetails = () => {
       <main className="bg-muted/40">
         <section className="container mx-auto max-w-5xl px-4 py-10">
           <div className="mb-6">
-            <Button variant="outline" onClick={() => navigate("/properties")}>
+            <Button
+              variant="ghost"
+              className="flex gap-4"
+              onClick={() => navigate("/properties")}
+            >
+              <ArrowLeft />
               Back to properties
             </Button>
           </div>
@@ -135,7 +149,7 @@ const LandlordPropertyDetails = () => {
               </p>
             </div>
 
-            <div className="overflow-hidden rounded-lg border bg-background shadow-sm">
+            <div className="bg-background overflow-hidden rounded-lg border shadow-sm">
               {coverImage ? (
                 <img
                   src={coverImage.url}
@@ -143,7 +157,7 @@ const LandlordPropertyDetails = () => {
                   className="h-80 w-full object-cover"
                 />
               ) : (
-                <div className="bg-muted flex h-80 w-full items-center justify-center text-sm text-muted-foreground">
+                <div className="bg-muted text-muted-foreground flex h-80 w-full items-center justify-center text-sm">
                   No images available
                 </div>
               )}
@@ -176,19 +190,19 @@ const LandlordPropertyDetails = () => {
 
             <dl className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
-                <dt className="text-muted-foreground text-xs uppercase tracking-wide">
+                <dt className="text-muted-foreground text-xs tracking-wide uppercase">
                   Property type
                 </dt>
                 <dd className="font-medium">{propertyTypeLabel}</dd>
               </div>
               <div>
-                <dt className="text-muted-foreground text-xs uppercase tracking-wide">
+                <dt className="text-muted-foreground text-xs tracking-wide uppercase">
                   Status
                 </dt>
                 <dd className="font-medium">{statusLabel}</dd>
               </div>
               <div>
-                <dt className="text-muted-foreground text-xs uppercase tracking-wide">
+                <dt className="text-muted-foreground text-xs tracking-wide uppercase">
                   Monthly rent
                 </dt>
                 <dd className="font-medium">
@@ -196,15 +210,17 @@ const LandlordPropertyDetails = () => {
                 </dd>
               </div>
               <div>
-                <dt className="text-muted-foreground text-xs uppercase tracking-wide">
+                <dt className="text-muted-foreground text-xs tracking-wide uppercase">
                   Max tenants
                 </dt>
                 <dd className="font-medium">
-                  {property.maxPersons ? `${property.maxPersons} persons` : "Not specified"}
+                  {property.maxPersons
+                    ? `${property.maxPersons} persons`
+                    : "Not specified"}
                 </dd>
               </div>
               <div>
-                <dt className="text-muted-foreground text-xs uppercase tracking-wide">
+                <dt className="text-muted-foreground text-xs tracking-wide uppercase">
                   Move-in date
                 </dt>
                 <dd className="font-medium">
@@ -212,14 +228,16 @@ const LandlordPropertyDetails = () => {
                 </dd>
               </div>
               <div>
-                <dt className="text-muted-foreground text-xs uppercase tracking-wide">
+                <dt className="text-muted-foreground text-xs tracking-wide uppercase">
                   Created
                 </dt>
-                <dd className="font-medium">{createdAtLabel ?? "Not specified"}</dd>
+                <dd className="font-medium">
+                  {createdAtLabel ?? "Not specified"}
+                </dd>
               </div>
               {property.targetLocation && (
                 <div>
-                  <dt className="text-muted-foreground text-xs uppercase tracking-wide">
+                  <dt className="text-muted-foreground text-xs tracking-wide uppercase">
                     Target location
                   </dt>
                   <dd className="font-medium">{property.targetLocation}</dd>
@@ -227,7 +245,7 @@ const LandlordPropertyDetails = () => {
               )}
               {property.landmark && (
                 <div>
-                  <dt className="text-muted-foreground text-xs uppercase tracking-wide">
+                  <dt className="text-muted-foreground text-xs tracking-wide uppercase">
                     Landmark
                   </dt>
                   <dd className="font-medium">{property.landmark}</dd>
