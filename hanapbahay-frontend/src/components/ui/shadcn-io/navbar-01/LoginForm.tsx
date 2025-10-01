@@ -5,10 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/providers/AuthProvider";
+import { useNavigate } from "react-router";
 import type { LoginPayload, LoginResponse } from "@/types/auth";
 
 export const LoginForm = ({ onSuccess }: { onSuccess: () => void }) => {
   const { login } = useAuth();
+  const navigate = useNavigate();
+
   const [form, setForm] = useState<LoginPayload>({ email: "", password: "" });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -21,10 +24,17 @@ export const LoginForm = ({ onSuccess }: { onSuccess: () => void }) => {
     try {
       const response: LoginResponse = await login(form);
       toast.success(response.message ?? "Logged in successfully");
+
+      // landlord redirect
+      const role = response.role?.toLowerCase();
+      if (role === "landlord") {
+        navigate("/properties");
+      }
+
       onSuccess();
-    } catch (err) {
+    } catch (e) {
       setError("Login failed");
-      toast.error("Login failed" + err);
+      toast.error("Login failed");
     } finally {
       setSubmitting(false);
     }
