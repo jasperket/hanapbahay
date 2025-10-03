@@ -1,10 +1,7 @@
 using AutoMapper;
-using hanapbahay_backend.Data;
 using hanapbahay_backend.Dto.Property;
 using hanapbahay_backend.Models.Entities;
 using hanapbahay_backend.Repositories.Property;
-using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 
 using PropertyEntity = hanapbahay_backend.Models.Entities.Property;
 
@@ -14,20 +11,17 @@ public class PropertyService : IPropertyService
 {
     private const string PropertyImagesContainer = "property-images";
 
-    private readonly AppDbContext _context;
     private readonly IMapper _mapper;
     private readonly IBlobStorageService _blobStorageService;
     private readonly ILogger<PropertyService> _logger;
     private readonly IPropertyRepository _propertyRepository;
 
     public PropertyService(
-        AppDbContext context,
         IMapper mapper,
         IBlobStorageService blobStorageService,
         ILogger<PropertyService> logger,
         IPropertyRepository propertyRepository)
     {
-        _context = context;
         _mapper = mapper;
         _blobStorageService = blobStorageService;
         _logger = logger;
@@ -48,13 +42,7 @@ public class PropertyService : IPropertyService
 
     public async Task<PropertyResponse?> GetPropertyByIdAsync(int propertyId)
     {
-        var property = await _context.Properties
-            .AsNoTracking()
-            .Include(p => p.Landlord)
-            .Include(p => p.PropertyAmenities)
-                .ThenInclude(pa => pa.Amenity)
-            .Include(p => p.Media)
-            .FirstOrDefaultAsync(p => p.Id == propertyId && !p.IsDeleted);
+        var property = await _propertyRepository.GetPropertyDetailsAsync(propertyId, asTracking: false);
 
         return property is null
             ? null
@@ -72,23 +60,17 @@ public class PropertyService : IPropertyService
         property.CreatedAt = DateTime.UtcNow;
         property.IsDeleted = false;
 
-        _context.Properties.Add(property);
-        await _context.SaveChangesAsync();
+        await _propertyRepository.AddPropertyAsync(property);
+        await _propertyRepository.SaveChangesAsync();
 
-        await SetPropertyAmenitiesAsync(property, amenities);
+        await _propertyRepository.SetPropertyAmenitiesAsync(property, amenities);
+
         await UploadImagesAsync(property, request.Images);
         RenumberMedia(property);
         EnsureCoverImage(property);
 
-        await _context.Entry(property).Reference(p => p.Landlord).LoadAsync();
-        await _context.Entry(property)
-            .Collection(p => p.PropertyAmenities)
-            .Query()
-            .Include(pa => pa.Amenity)
-            .LoadAsync();
-        await _context.Entry(property).Collection(p => p.Media).LoadAsync();
-
-        await _context.SaveChangesAsync();
+        await _propertyRepository.SaveChangesAsync();
+        await _propertyRepository.ReloadPropertyDetailsAsync(property);
 
         var response = _mapper.Map<PropertyResponse>(property);
         return (true, response, Array.Empty<string>());
@@ -96,12 +78,7 @@ public class PropertyService : IPropertyService
 
     public async Task<(bool Success, PropertyResponse? Property, IEnumerable<string> Errors)> UpdatePropertyAsync(int propertyId, Guid landlordId, PropertyUpdateRequest request)
     {
-        var property = await _context.Properties
-            .Include(p => p.PropertyAmenities)
-                .ThenInclude(pa => pa.Amenity)
-            .Include(p => p.Media)
-            .Include(p => p.Landlord)
-            .FirstOrDefaultAsync(p => p.Id == propertyId && !p.IsDeleted);
+        var property = await _propertyRepository.GetPropertyDetailsAsync(propertyId, asTracking: true);
 
         if (property is null)
             return (false, null, new[] { "Property not found." });
@@ -114,7 +91,7 @@ public class PropertyService : IPropertyService
             return (false, null, amenityErrors);
 
         ApplyPropertyFields(property, request);
-        await UpdatePropertyAmenitiesAsync(property, amenities);
+        await _propertyRepository.UpdatePropertyAmenitiesAsync(property, amenities);
 
         if (request.RemoveImageIds.Length > 0)
             await RemovePropertyImagesAsync(property, request.RemoveImageIds);
@@ -123,14 +100,8 @@ public class PropertyService : IPropertyService
         RenumberMedia(property);
         EnsureCoverImage(property);
 
-        await _context.SaveChangesAsync();
-
-        await _context.Entry(property)
-            .Collection(p => p.PropertyAmenities)
-            .Query()
-            .Include(pa => pa.Amenity)
-            .LoadAsync();
-        await _context.Entry(property).Collection(p => p.Media).LoadAsync();
+        await _propertyRepository.SaveChangesAsync();
+        await _propertyRepository.ReloadPropertyDetailsAsync(property);
 
         var response = _mapper.Map<PropertyResponse>(property);
         return (true, response, Array.Empty<string>());
@@ -138,9 +109,7 @@ public class PropertyService : IPropertyService
 
     public async Task<(bool Success, IEnumerable<string> Errors)> DeletePropertyAsync(int propertyId, Guid landlordId, bool allowAdminOverride = false)
     {
-        var property = await _context.Properties
-            .Include(p => p.Media)
-            .FirstOrDefaultAsync(p => p.Id == propertyId && !p.IsDeleted);
+        var property = await _propertyRepository.GetPropertyDetailsAsync(propertyId, asTracking: true);
 
         if (property is null)
             return (false, new[] { "Property not found." });
@@ -151,13 +120,13 @@ public class PropertyService : IPropertyService
         foreach (var media in property.Media.ToList())
         {
             await DeleteBlobAsync(media.Url);
-            _context.Media.Remove(media);
+            _propertyRepository.RemovePropertyMedia(media);
         }
 
         property.IsDeleted = true;
         property.Status = ListingStatus.Removed;
 
-        await _context.SaveChangesAsync();
+        await _propertyRepository.SaveChangesAsync();
         return (true, Array.Empty<string>());
     }
 
@@ -176,59 +145,6 @@ public class PropertyService : IPropertyService
         property.MaxPersons = request.MaxPersons;
         property.MoveInDate = request.MoveInDate;
         property.Status = request.Status;
-    }
-
-    private async Task SetPropertyAmenitiesAsync(PropertyEntity property, IEnumerable<Amenity> amenities)
-    {
-        if (!amenities.Any())
-            return;
-
-        foreach (var amenity in amenities)
-        {
-            _context.PropertyAmenities.Add(new PropertyAmenity
-            {
-                PropertyId = property.Id,
-                AmenityId = amenity.Id
-            });
-        }
-
-        await _context.SaveChangesAsync();
-        property.PropertyAmenities = await _context.PropertyAmenities
-            .Where(pa => pa.PropertyId == property.Id)
-            .Include(pa => pa.Amenity)
-            .ToListAsync();
-    }
-
-    private async Task UpdatePropertyAmenitiesAsync(PropertyEntity property, IEnumerable<Amenity> desiredAmenities)
-    {
-        var desiredIds = desiredAmenities.Select(a => a.Id).ToHashSet();
-        var existingIds = property.PropertyAmenities.Select(pa => pa.AmenityId).ToHashSet();
-
-        var toRemove = property.PropertyAmenities
-            .Where(pa => !desiredIds.Contains(pa.AmenityId))
-            .ToList();
-
-        foreach (var remove in toRemove)
-        {
-            _context.PropertyAmenities.Remove(remove);
-        }
-
-        var toAddIds = desiredIds.Except(existingIds).ToList();
-        foreach (var amenityId in toAddIds)
-        {
-            _context.PropertyAmenities.Add(new PropertyAmenity
-            {
-                PropertyId = property.Id,
-                AmenityId = amenityId
-            });
-        }
-
-        await _context.SaveChangesAsync();
-
-        property.PropertyAmenities = await _context.PropertyAmenities
-            .Where(pa => pa.PropertyId == property.Id)
-            .Include(pa => pa.Amenity)
-            .ToListAsync();
     }
 
     private async Task UploadImagesAsync(PropertyEntity property, IEnumerable<IFormFile> files)
@@ -279,7 +195,7 @@ public class PropertyService : IPropertyService
         foreach (var media in toRemove)
         {
             await DeleteBlobAsync(media.Url);
-            _context.Media.Remove(media);
+            _propertyRepository.RemovePropertyMedia(media);
             property.Media.Remove(media);
         }
     }
@@ -373,19 +289,15 @@ public class PropertyService : IPropertyService
         if (codes.Length == 0)
             return (true, new List<Amenity>(), Array.Empty<string>());
 
-        var comparer = StringComparer.OrdinalIgnoreCase;
-        var codeSet = new HashSet<string>(codes, comparer);
-
-        var amenities = await _context.Amenities
-            .Where(a => codeSet.Contains(a.Code))
-            .ToListAsync();
+        var amenities = await _propertyRepository.GetAmenitiesByCodesAsync(codes);
 
         if (amenities.Count == codes.Length)
             return (true, amenities, Array.Empty<string>());
 
+        var comparer = StringComparer.OrdinalIgnoreCase;
         var foundCodes = amenities.Select(a => a.Code).ToHashSet(comparer);
         var missing = codes.Where(code => !foundCodes.Contains(code)).ToArray();
-        var errors = missing.Select(code => $"Amenity code '{code}' is invalid.").ToArray();
+        var errors = missing.Select(code => "Amenity code '" + code + "' is invalid.").ToArray();
         return (false, amenities, errors);
     }
 }
