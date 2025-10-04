@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -137,31 +138,21 @@ public class PropertyRepository : GenericRepository<PropertyEntity>, IPropertyRe
 
     public async Task<IEnumerable<PropertyResponse>> GetPropertiesAsync()
     {
-        var properties = await _context.Properties
+        return await _context.Properties
             .AsNoTracking()
             .Where(p => !p.IsDeleted)
-            .Include(p => p.Landlord)
-            .Include(p => p.PropertyAmenities)
-                .ThenInclude(pa => pa.Amenity)
-            .Include(p => p.Media)
             .OrderByDescending(p => p.CreatedAt)
+            .ProjectTo<PropertyResponse>(_mapper.ConfigurationProvider)
             .ToListAsync();
-
-        return _mapper.Map<IEnumerable<PropertyResponse>>(properties);
     }
 
     public async Task<IEnumerable<PropertyResponse>> GetPropertiesByLandlordAsync(Guid landlordId)
     {
-        var properties = await _context.Properties
+        return await _context.Properties
             .AsNoTracking()
             .Where(p => !p.IsDeleted && p.LandlordId == landlordId)
-            .Include(p => p.Landlord)
-            .Include(p => p.PropertyAmenities)
-                .ThenInclude(pa => pa.Amenity)
-            .Include(p => p.Media)
             .OrderByDescending(p => p.CreatedAt)
+            .ProjectTo<PropertyResponse>(_mapper.ConfigurationProvider)
             .ToListAsync();
-
-        return _mapper.Map<IEnumerable<PropertyResponse>>(properties);
     }
 }

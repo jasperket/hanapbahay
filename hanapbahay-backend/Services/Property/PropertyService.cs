@@ -90,7 +90,7 @@ public class PropertyService : IPropertyService
         if (!amenitiesValid)
             return (false, null, amenityErrors);
 
-        ApplyPropertyFields(property, request);
+        _mapper.Map(request, property);
         await _propertyRepository.UpdatePropertyAmenitiesAsync(property, amenities);
 
         if (request.RemoveImageIds.Length > 0)
@@ -128,23 +128,6 @@ public class PropertyService : IPropertyService
 
         await _propertyRepository.SaveChangesAsync();
         return (true, Array.Empty<string>());
-    }
-
-    private static void ApplyPropertyFields(PropertyEntity property, AddPropertyRequest request)
-    {
-        property.Title = request.Title;
-        property.Description = request.Description;
-        property.PropertyType = request.PropertyType;
-        property.Province = request.Province;
-        property.City = request.City;
-        property.Barangay = request.Barangay;
-        property.ZipCode = request.ZipCode;
-        property.TargetLocation = request.TargetLocation;
-        property.Landmark = request.Landmark;
-        property.MonthlyPrice = request.MonthlyPrice;
-        property.MaxPersons = request.MaxPersons;
-        property.MoveInDate = request.MoveInDate;
-        property.Status = request.Status;
     }
 
     private async Task UploadImagesAsync(PropertyEntity property, IEnumerable<IFormFile> files)
