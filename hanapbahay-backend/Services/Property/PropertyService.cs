@@ -49,6 +49,12 @@ public class PropertyService : IPropertyService
             : _mapper.Map<PropertyResponse>(property);
     }
 
+    public async Task<IEnumerable<AmenityOptionResponse>> GetAmenityOptionsAsync()
+    {
+        var amenities = await _propertyRepository.GetAllAmenitiesAsync();
+        return _mapper.Map<IEnumerable<AmenityOptionResponse>>(amenities);
+    }
+
     public async Task<(bool Success, PropertyResponse? Property, IEnumerable<string> Errors)> AddPropertyAsync(Guid landlordId, PropertyCreateRequest request)
     {
         var (amenitiesValid, amenities, amenityErrors) = await ResolveAmenitiesAsync(request.AmenityCodes);

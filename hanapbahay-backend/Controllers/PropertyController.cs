@@ -48,6 +48,13 @@ public class PropertyController : ControllerBase
         return Ok(property);
     }
 
+    [HttpGet("amenities")]
+    public async Task<IActionResult> GetAmenities()
+    {
+        var amenities = await _propertyService.GetAmenityOptionsAsync();
+        return Ok(amenities);
+    }
+
     [HttpPost]
     [Authorize(Roles = "Landlord")]
     [Consumes("multipart/form-data")]

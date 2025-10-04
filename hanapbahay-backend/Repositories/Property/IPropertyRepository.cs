@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using hanapbahay_backend.Dto.Property;
 using hanapbahay_backend.Models.Entities;
@@ -16,6 +16,7 @@ public interface IPropertyRepository
     Task SetPropertyAmenitiesAsync(PropertyEntity property, IEnumerable<Amenity> amenities);
     Task UpdatePropertyAmenitiesAsync(PropertyEntity property, IEnumerable<Amenity> desiredAmenities);
     Task ReloadPropertyDetailsAsync(PropertyEntity property);
+    Task<List<Amenity>> GetAllAmenitiesAsync();
     Task<List<Amenity>> GetAmenitiesByCodesAsync(IEnumerable<string> codes);
     void RemovePropertyMedia(Media media);
     Task SaveChangesAsync();

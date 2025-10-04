@@ -46,6 +46,14 @@ public class PropertyRepository : GenericRepository<PropertyEntity>, IPropertyRe
             .ToListAsync();
     }
 
+    public async Task<List<Amenity>> GetAllAmenitiesAsync()
+    {
+        return await _context.Amenities
+            .AsNoTracking()
+            .OrderBy(a => a.Label ?? a.Code)
+            .ToListAsync();
+    }
+
     public async Task<PropertyEntity?> GetPropertyDetailsAsync(int propertyId, bool asTracking = false)
     {
         IQueryable<PropertyEntity> query = _context.Properties

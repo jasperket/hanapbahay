@@ -11,6 +11,7 @@ public class PropertyProfile : Profile
         CreateMap<AddPropertyRequest, Property>();
 
         CreateMap<Media, PropertyMediaResponse>();
+        CreateMap<Amenity, AmenityOptionResponse>();
 
         CreateMap<Property, PropertyResponse>()
             .ForMember(dest => dest.LandlordDisplayName, opt => opt.MapFrom(src => src.Landlord.DisplayName))
