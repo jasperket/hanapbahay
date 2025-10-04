@@ -22,7 +22,7 @@ export const buildFormStateFromProperty = (property: Property): FormState => ({
       : "",
   moveInDate: property.moveInDate ? property.moveInDate.slice(0, 10) : "",
   status: String(property.status),
-  amenityCodes: property.amenityCodes.join(", "),
+  amenityCodes: [...property.amenityCodes],
 });
 
 export const initialFormState: FormState = {
@@ -39,5 +39,5 @@ export const initialFormState: FormState = {
   maxPersons: "",
   moveInDate: "",
   status: String(listingStatusOptions[0]?.value ?? 0),
-  amenityCodes: "",
+  amenityCodes: [],
 };

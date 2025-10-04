@@ -1,5 +1,8 @@
+import { useEffect, useState, type FormEvent } from "react";
 import { Navbar01 } from "@/components/ui/shadcn-io/navbar-01";
 import { useNavigate } from "react-router";
+import { toast } from "sonner";
+import { getAmenities } from "@/services/propertyClient";
 import { usePropertyFormState } from "./hooks/usePropertyFormState";
 import { usePropertyImages } from "./hooks/usePropertyImages";
 import { useSubmitProperty } from "./hooks/useSubmitProperty";
@@ -12,7 +15,7 @@ import { ImageUploader } from "./sections/ImageUploader";
 import { GalleryUploader } from "./sections/GalleryUploader";
 import { FormActions } from "./sections/FormActions";
 
-import type { Property } from "@/types/property";
+import type { AmenityOption, Property } from "@/types/property";
 import { propertyTypeOptions, listingStatusOptions } from "@/types/property";
 
 interface PropertyFormProps {
@@ -28,13 +31,57 @@ export function PropertyForm({
 }: PropertyFormProps) {
   const navigate = useNavigate();
 
-  // 📝 form state
-  const { formState, handleInputChange } = usePropertyFormState(
+  const { formState, setFormState, handleInputChange } = usePropertyFormState(
     mode,
     initialProperty,
   );
 
-  // 🖼️ images
+  const [amenityOptions, setAmenityOptions] = useState<AmenityOption[]>([]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadAmenities = async () => {
+      try {
+        const options = await getAmenities();
+        if (isMounted) {
+          setAmenityOptions(options);
+        }
+      } catch (error) {
+        if (isMounted) {
+          toast.error("Failed to load amenities. Please try again.");
+        }
+
+        if (import.meta.env.DEV) {
+          console.error("[PropertyForm] Unable to fetch amenities", error);
+        }
+      }
+    };
+
+    loadAmenities();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const handleAddAmenity = (code: string) => {
+    setFormState((prev) => {
+      if (prev.amenityCodes.includes(code)) {
+        return prev;
+      }
+
+      return { ...prev, amenityCodes: [...prev.amenityCodes, code] };
+    });
+  };
+
+  const handleRemoveAmenity = (code: string) => {
+    setFormState((prev) => ({
+      ...prev,
+      amenityCodes: prev.amenityCodes.filter((selected) => selected !== code),
+    }));
+  };
+
   const {
     coverImage,
     coverPreview,
@@ -52,11 +99,10 @@ export function PropertyForm({
     initialProperty?.media.filter((m) => !m.isCover) ?? [],
   );
 
-  // ✅ submit hook
   const { isSubmitting, handleSubmit } = useSubmitProperty(mode, propertyId);
 
-  const onSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     handleSubmit(formState, coverImage, galleryImages, removedImageIds, () =>
       navigate("/properties"),
     );
@@ -92,6 +138,9 @@ export function PropertyForm({
               onChange={handleInputChange}
               disabled={isSubmitting}
               statusOptions={listingStatusOptions}
+              amenityOptions={amenityOptions}
+              onAmenityAdd={handleAddAmenity}
+              onAmenityRemove={handleRemoveAmenity}
             />
 
             <ImageUploader

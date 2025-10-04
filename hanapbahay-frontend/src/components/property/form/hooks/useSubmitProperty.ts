@@ -88,9 +88,6 @@ function mapFormToPayload(form: FormState) {
     maxPersons: form.maxPersons ? Number(form.maxPersons) : undefined,
     moveInDate: form.moveInDate || undefined,
     status: Number(form.status) as ListingStatusValue,
-    amenityCodes: form.amenityCodes
-      .split(",")
-      .map((c) => c.trim())
-      .filter(Boolean),
+    amenityCodes: form.amenityCodes.map((code) => code.trim()).filter(Boolean),
   };
 }

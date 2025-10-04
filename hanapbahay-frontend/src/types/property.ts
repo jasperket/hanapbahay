@@ -20,6 +20,11 @@ export const listingStatusOptions = [
 
 export type ListingStatusValue = (typeof listingStatusOptions)[number]["value"];
 
+export interface AmenityOption {
+  code: string;
+  label: string | null;
+}
+
 export interface PropertyMedia {
   id: number;
   url: string;
@@ -89,5 +94,5 @@ export interface FormState {
   maxPersons: string;
   moveInDate: string;
   status: string;
-  amenityCodes: string;
+  amenityCodes: string[];
 }

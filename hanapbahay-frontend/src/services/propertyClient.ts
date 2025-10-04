@@ -1,5 +1,6 @@
 import { api } from "@/services/api";
 import type {
+  AmenityOption,
   CreatePropertyPayload,
   Property,
   UpdatePropertyPayload,
@@ -50,6 +51,11 @@ const createProperty = async (payload: CreatePropertyPayload) => {
     },
   });
 
+  return data;
+};
+
+const getAmenities = async () => {
+  const { data } = await api.get<AmenityOption[]>("Property/amenities");
   return data;
 };
 
@@ -126,6 +132,7 @@ const deleteProperty = async (propertyId: number) => {
 
 export {
   createProperty,
+  getAmenities,
   getLandlordProperties,
   getPropertyById,
   updateProperty,
