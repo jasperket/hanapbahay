@@ -286,7 +286,7 @@ const PropertyDetails = () => {
                 {property.targetLocation && (
                   <div>
                     <dt className="text-muted-foreground text-xs tracking-wide uppercase">
-                      Target location
+                      Street Address
                     </dt>
                     <dd className="font-medium">{property.targetLocation}</dd>
                   </div>

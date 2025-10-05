@@ -14,7 +14,12 @@ interface Props {
   isRequired: (field: keyof FormState) => boolean;
 }
 
-export function LocationSection({ formState, onChange, disabled, isRequired }: Props) {
+export function LocationSection({
+  formState,
+  onChange,
+  disabled,
+  isRequired,
+}: Props) {
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
       <InputField
@@ -49,7 +54,7 @@ export function LocationSection({ formState, onChange, disabled, isRequired }: P
       />
       <InputField
         id="targetLocation"
-        label="Target Location"
+        label="Street Address"
         value={formState.targetLocation}
         onChange={onChange}
         disabled={disabled}
