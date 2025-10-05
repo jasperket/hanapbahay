@@ -27,6 +27,7 @@ public class PropertyResponse
     public DateTime CreatedAt { get; set; }
 
     public string[] AmenityCodes { get; set; } = Array.Empty<string>();
+    public string[] AmenityLabels { get; set; } = Array.Empty<string>();
     public IEnumerable<PropertyMediaResponse> Media { get; set; } = Array.Empty<PropertyMediaResponse>();
 }
 

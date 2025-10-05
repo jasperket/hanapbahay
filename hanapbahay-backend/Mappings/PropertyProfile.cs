@@ -1,3 +1,4 @@
+using System.Linq;
 using AutoMapper;
 using hanapbahay_backend.Dto.Property;
 using hanapbahay_backend.Models.Entities;
@@ -17,6 +18,8 @@ public class PropertyProfile : Profile
             .ForMember(dest => dest.LandlordDisplayName, opt => opt.MapFrom(src => src.Landlord.DisplayName))
             .ForMember(dest => dest.AmenityCodes, opt => opt.MapFrom(src => src.PropertyAmenities
                 .Select(pa => pa.Amenity.Code)))
+            .ForMember(dest => dest.AmenityLabels, opt => opt.MapFrom(src => src.PropertyAmenities
+                .Select(pa => pa.Amenity.Label ?? pa.Amenity.Code)))
             .ForMember(dest => dest.Media, opt => opt.MapFrom(src => src.Media
                 .OrderBy(m => m.Order)
                 .ThenBy(m => m.Id)));
