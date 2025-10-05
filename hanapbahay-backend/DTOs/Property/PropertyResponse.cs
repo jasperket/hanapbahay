@@ -7,6 +7,7 @@ public class PropertyResponse
     public int Id { get; set; }
     public Guid LandlordId { get; set; }
     public string LandlordDisplayName { get; set; } = null!;
+    public string? LandlordPhoneNumber { get; set; }
 
     public string Title { get; set; } = null!;
     public string? Description { get; set; }
@@ -30,4 +31,3 @@ public class PropertyResponse
     public string[] AmenityLabels { get; set; } = Array.Empty<string>();
     public IEnumerable<PropertyMediaResponse> Media { get; set; } = Array.Empty<PropertyMediaResponse>();
 }
-

@@ -16,6 +16,7 @@ public class PropertyProfile : Profile
 
         CreateMap<Property, PropertyResponse>()
             .ForMember(dest => dest.LandlordDisplayName, opt => opt.MapFrom(src => src.Landlord.DisplayName))
+            .ForMember(dest => dest.LandlordPhoneNumber, opt => opt.MapFrom(src => src.Landlord.PhoneNumber))
             .ForMember(dest => dest.AmenityCodes, opt => opt.MapFrom(src => src.PropertyAmenities
                 .Select(pa => pa.Amenity.Code)))
             .ForMember(dest => dest.AmenityLabels, opt => opt.MapFrom(src => src.PropertyAmenities
