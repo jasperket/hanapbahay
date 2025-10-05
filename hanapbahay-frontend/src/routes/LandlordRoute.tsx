@@ -2,8 +2,12 @@ import { Navigate, Outlet, useLocation } from "react-router";
 import { useAuth } from "@/providers/AuthProvider";
 
 const LandlordRoute = () => {
-  const { user } = useAuth();
+  const { user, isRefreshing } = useAuth();
   const location = useLocation();
+
+  if (isRefreshing) {
+    return <div>Loading...</div>;
+  }
 
   if (!user) {
     return <Navigate to="/" replace state={{ from: location }} />;
@@ -13,7 +17,7 @@ const LandlordRoute = () => {
     (role) => role.toLowerCase() === "landlord",
   );
 
-  if (!isLandlord) {
+  if (!isLandlord && location.pathname !== "/") {
     return <Navigate to="/" replace state={{ from: location }} />;
   }
 

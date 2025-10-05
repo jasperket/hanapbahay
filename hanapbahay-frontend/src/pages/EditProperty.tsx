@@ -54,7 +54,7 @@ const EditProperty = () => {
     return (
       <>
         <Navbar01 />
-        <main className="bg-muted/40">
+        <main>
           <section className="container mx-auto max-w-4xl px-4 py-10">
             <p className="text-muted-foreground">Loading property details...</p>
           </section>

@@ -2,8 +2,12 @@ import { Navigate, Outlet, useLocation } from "react-router";
 import { useAuth } from "@/providers/AuthProvider";
 
 const GuestRoute = () => {
-  const { user } = useAuth();
+  const { user, isRefreshing } = useAuth();
   const location = useLocation();
+
+  if (isRefreshing) {
+    return <div>Loading...</div>;
+  }
 
   if (user) {
     const isLandlord = user.roles.some(
@@ -12,7 +16,6 @@ const GuestRoute = () => {
     if (isLandlord) {
       return <Navigate to="/properties" replace state={{ from: location }} />;
     }
-    return <Navigate to="/" replace state={{ from: location }} />;
   }
 
   return <Outlet />;

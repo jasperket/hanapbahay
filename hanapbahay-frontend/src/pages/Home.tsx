@@ -9,9 +9,9 @@ const Home = () => {
   return (
     <>
       <Navbar01 />
-      <main className="bg-muted/40">
+      <main>
         <section className="container mx-auto flex min-h-[60vh] max-w-screen-lg flex-col items-start justify-center gap-6 px-4 py-16">
-          <h1 className="text-balance text-4xl font-bold tracking-tight sm:text-5xl">
+          <h1 className="text-4xl font-bold tracking-tight text-balance sm:text-5xl">
             Find your next rental property the easy way.
           </h1>
           <p className="text-muted-foreground max-w-2xl text-lg">
