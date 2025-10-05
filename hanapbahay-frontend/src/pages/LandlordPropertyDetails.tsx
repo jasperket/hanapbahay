@@ -125,6 +125,17 @@ const LandlordPropertyDetails = () => {
   const moveInDateLabel = formatOptionalDate(property.moveInDate);
   const createdAtLabel = formatOptionalDate(property.createdAt);
 
+  const amenities = property.amenityCodes.map((code, index) => {
+    const label = property.amenityLabels[index];
+    if (typeof label === "string") {
+      const trimmed = label.trim();
+      if (trimmed.length > 0) {
+        return { code, label: trimmed };
+      }
+    }
+    return { code, label: code };
+  });
+
   return (
     <>
       <Navbar01 />
@@ -255,14 +266,14 @@ const LandlordPropertyDetails = () => {
 
             <div className="space-y-2">
               <h2 className="text-xl font-semibold">Amenities</h2>
-              {property.amenityCodes.length > 0 ? (
+              {amenities.length > 0 ? (
                 <div className="flex flex-wrap gap-2">
-                  {property.amenityCodes.map((amenity) => (
+                  {amenities.map((amenity) => (
                     <span
-                      key={amenity}
+                      key={amenity.code}
                       className="bg-muted text-muted-foreground rounded-full px-3 py-1 text-xs font-medium"
                     >
-                      {amenity}
+                      {amenity.label}
                     </span>
                   ))}
                 </div>

@@ -51,6 +51,7 @@ export interface Property {
   status: ListingStatusValue;
   createdAt: string;
   amenityCodes: string[];
+  amenityLabels: string[];
   media: PropertyMedia[];
 }
 
@@ -96,3 +97,4 @@ export interface FormState {
   status: string;
   amenityCodes: string[];
 }
+
