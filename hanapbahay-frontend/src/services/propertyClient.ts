@@ -59,6 +59,11 @@ const getAmenities = async () => {
   return data;
 };
 
+const getProperties = async () => {
+  const { data } = await api.get<Property[]>("Property");
+  return data;
+};
+
 const getLandlordProperties = async () => {
   const { data } = await api.get<Property[]>("Property/mine");
   return data;
@@ -133,6 +138,7 @@ const deleteProperty = async (propertyId: number) => {
 export {
   createProperty,
   getAmenities,
+  getProperties,
   getLandlordProperties,
   getPropertyById,
   updateProperty,

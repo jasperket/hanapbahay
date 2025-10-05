@@ -7,11 +7,11 @@ import RootLayout, { loader as rootLoader } from "@/routes/root";
 import ProtectedRoute from "@/routes/ProtectedRoute";
 import LandlordRoute from "@/routes/LandlordRoute";
 import Home from "@/pages/Home";
+import PropertyDetails from "@/pages/PropertyDetails";
 import Account from "@/pages/Account";
 import CreateProperty from "@/pages/CreateProperty";
 import LandlordProperties from "@/pages/LandlordProperties";
 import EditProperty from "@/pages/EditProperty";
-import LandlordPropertyDetails from "@/pages/LandlordPropertyDetails";
 import GuestRoute from "./routes/GuestRoute";
 
 const router = createBrowserRouter(
@@ -20,15 +20,12 @@ const router = createBrowserRouter(
       <Route element={<GuestRoute />}>
         <Route index element={<Home />} />
       </Route>
+      <Route path="properties/:propertyId" element={<PropertyDetails />} />
       <Route element={<ProtectedRoute />}>
         <Route path="account" element={<Account />} />
         <Route element={<LandlordRoute />}>
           <Route path="properties" element={<LandlordProperties />} />
           <Route path="properties/new" element={<CreateProperty />} />
-          <Route
-            path="properties/:propertyId"
-            element={<LandlordPropertyDetails />}
-          />
           <Route
             path="properties/:propertyId/edit"
             element={<EditProperty />}
@@ -40,3 +37,5 @@ const router = createBrowserRouter(
 );
 
 export { router };
+
+
