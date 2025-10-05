@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/providers/AuthProvider";
 import type {
@@ -27,6 +27,7 @@ export const RegisterForm = ({ onSuccess }: { onSuccess: () => void }) => {
   });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,40 +56,59 @@ export const RegisterForm = ({ onSuccess }: { onSuccess: () => void }) => {
         onChange={(e) => setForm({ ...form, displayName: e.target.value })}
         required
       />
-      <Input
-        type="email"
-        placeholder="Email"
-        value={form.email}
-        onChange={(e) => setForm({ ...form, email: e.target.value })}
-        required
-      />
-      <Input
-        type="tel"
-        placeholder="Phone"
-        value={form.phoneNumber}
-        onChange={(e) => setForm({ ...form, phoneNumber: e.target.value })}
-        required
-      />
-      <Input
-        type="password"
-        placeholder="Password"
-        value={form.password}
-        onChange={(e) => setForm({ ...form, password: e.target.value })}
-        required
-      />
-      <select
-        value={form.role}
-        onChange={(e) =>
-          setForm({ ...form, role: Number(e.target.value) as UserRoleValue })
-        }
-        className="w-full rounded-md border px-3 py-2 text-sm"
-      >
-        {roles.map((r) => (
-          <option key={r.value} value={r.value}>
-            {r.label}
-          </option>
-        ))}
-      </select>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <Input
+          type="email"
+          placeholder="Email"
+          value={form.email}
+          onChange={(e) => setForm({ ...form, email: e.target.value })}
+          required
+        />
+        <div className="relative">
+          <Input
+            type={showPassword ? "text" : "password"}
+            placeholder="Password"
+            value={form.password}
+            onChange={(e) => setForm({ ...form, password: e.target.value })}
+            required
+            className="pr-10"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((prev) => !prev)}
+            className="text-muted-foreground absolute inset-y-0 right-0 flex items-center px-3 text-sm"
+            aria-label={showPassword ? "Hide password" : "Show password"}
+          >
+            {showPassword ? (
+              <EyeOff className="size-4" />
+            ) : (
+              <Eye className="size-4" />
+            )}
+          </button>
+        </div>
+      </div>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <Input
+          type="tel"
+          placeholder="Phone"
+          value={form.phoneNumber}
+          onChange={(e) => setForm({ ...form, phoneNumber: e.target.value })}
+          required
+        />
+        <select
+          value={form.role}
+          onChange={(e) =>
+            setForm({ ...form, role: Number(e.target.value) as UserRoleValue })
+          }
+          className="w-full rounded-md border px-3 py-2 text-sm"
+        >
+          {roles.map((r) => (
+            <option key={r.value} value={r.value}>
+              {r.label}
+            </option>
+          ))}
+        </select>
+      </div>
       {error && <p className="text-sm text-red-600">{error}</p>}
       <Button type="submit" className="w-full" disabled={submitting}>
         {submitting ? (
