@@ -33,9 +33,12 @@ const PropertyDetails = () => {
   const [property, setProperty] = useState<Property | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
-  const isLandlord = user?.roles?.some((role) => role.toLowerCase() === "landlord") ?? false;
+  const isLandlord =
+    user?.roles?.some((role) => role.toLowerCase() === "landlord") ?? false;
   const fallbackPath = isLandlord ? "/properties" : "/";
-  const backButtonLabel = isLandlord ? "Back to my properties" : "Back to listings";
+  const backButtonLabel = isLandlord
+    ? "Back to my properties"
+    : "Back to listings";
 
   const parsedPropertyId = propertyId
     ? Number.parseInt(propertyId, 10)
@@ -129,6 +132,11 @@ const PropertyDetails = () => {
     propertyTypeLookup.get(property.propertyType) ?? "Unknown";
   const moveInDateLabel = formatOptionalDate(property.moveInDate);
   const createdAtLabel = formatOptionalDate(property.createdAt);
+  const landlordPhoneNumber =
+    property.landlordPhoneNumber &&
+    property.landlordPhoneNumber.trim().length > 0
+      ? property.landlordPhoneNumber.trim()
+      : null;
 
   const amenities = property.amenityCodes.map((code, index) => {
     const label = property.amenityLabels[index];
@@ -204,70 +212,95 @@ const PropertyDetails = () => {
               </div>
             )}
 
-            <dl className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div>
-                <dt className="text-muted-foreground text-xs tracking-wide uppercase">
-                  Property type
-                </dt>
-                <dd className="font-medium">{propertyTypeLabel}</dd>
-              </div>
-              <div>
-                <dt className="text-muted-foreground text-xs tracking-wide uppercase">
-                  Status
-                </dt>
-                <dd className="font-medium">{statusLabel}</dd>
-              </div>
-              <div>
-                <dt className="text-muted-foreground text-xs tracking-wide uppercase">
-                  Monthly rent
-                </dt>
-                <dd className="font-medium">
-                  {currencyFormatter.format(property.monthlyPrice)}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-muted-foreground text-xs tracking-wide uppercase">
-                  Max tenants
-                </dt>
-                <dd className="font-medium">
-                  {property.maxPersons
-                    ? `${property.maxPersons} persons`
-                    : "Not specified"}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-muted-foreground text-xs tracking-wide uppercase">
-                  Move-in date
-                </dt>
-                <dd className="font-medium">
-                  {moveInDateLabel ?? "Not specified"}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-muted-foreground text-xs tracking-wide uppercase">
-                  Created
-                </dt>
-                <dd className="font-medium">
-                  {createdAtLabel ?? "Not specified"}
-                </dd>
-              </div>
-              {property.targetLocation && (
+            <div className="space-y-2">
+              <h2 className="text-xl font-semibold">Landlord</h2>
+              <dl className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <dt className="text-muted-foreground text-xs tracking-wide uppercase">
-                    Target location
+                    Name
                   </dt>
-                  <dd className="font-medium">{property.targetLocation}</dd>
+                  <dd className="font-medium">
+                    {property.landlordDisplayName}
+                  </dd>
                 </div>
-              )}
-              {property.landmark && (
                 <div>
                   <dt className="text-muted-foreground text-xs tracking-wide uppercase">
-                    Landmark
+                    Phone
                   </dt>
-                  <dd className="font-medium">{property.landmark}</dd>
+                  <dd className="font-medium">
+                    {landlordPhoneNumber ?? "Not provided"}
+                  </dd>
                 </div>
-              )}
-            </dl>
+              </dl>
+            </div>
+
+            <div className="space-y-2">
+              <h2 className="text-xl font-semibold">Details</h2>
+              <dl className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div>
+                  <dt className="text-muted-foreground text-xs tracking-wide uppercase">
+                    Property type
+                  </dt>
+                  <dd className="font-medium">{propertyTypeLabel}</dd>
+                </div>
+                <div>
+                  <dt className="text-muted-foreground text-xs tracking-wide uppercase">
+                    Status
+                  </dt>
+                  <dd className="font-medium">{statusLabel}</dd>
+                </div>
+                <div>
+                  <dt className="text-muted-foreground text-xs tracking-wide uppercase">
+                    Monthly rent
+                  </dt>
+                  <dd className="font-medium">
+                    {currencyFormatter.format(property.monthlyPrice)}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-muted-foreground text-xs tracking-wide uppercase">
+                    Max tenants
+                  </dt>
+                  <dd className="font-medium">
+                    {property.maxPersons
+                      ? `${property.maxPersons} persons`
+                      : "Not specified"}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-muted-foreground text-xs tracking-wide uppercase">
+                    Move-in date
+                  </dt>
+                  <dd className="font-medium">
+                    {moveInDateLabel ?? "Not specified"}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-muted-foreground text-xs tracking-wide uppercase">
+                    Created
+                  </dt>
+                  <dd className="font-medium">
+                    {createdAtLabel ?? "Not specified"}
+                  </dd>
+                </div>
+                {property.targetLocation && (
+                  <div>
+                    <dt className="text-muted-foreground text-xs tracking-wide uppercase">
+                      Target location
+                    </dt>
+                    <dd className="font-medium">{property.targetLocation}</dd>
+                  </div>
+                )}
+                {property.landmark && (
+                  <div>
+                    <dt className="text-muted-foreground text-xs tracking-wide uppercase">
+                      Landmark
+                    </dt>
+                    <dd className="font-medium">{property.landmark}</dd>
+                  </div>
+                )}
+              </dl>
+            </div>
 
             <div className="space-y-2">
               <h2 className="text-xl font-semibold">Amenities</h2>
@@ -296,16 +329,3 @@ const PropertyDetails = () => {
 };
 
 export default PropertyDetails;
-
-
-
-
-
-
-
-
-
-
-
-
-

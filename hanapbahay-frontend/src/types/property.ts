@@ -36,6 +36,7 @@ export interface Property {
   id: number;
   landlordId: string;
   landlordDisplayName: string;
+  landlordPhoneNumber: string | null;
   title: string;
   description?: string | null;
   propertyType: PropertyTypeValue;
@@ -97,4 +98,3 @@ export interface FormState {
   status: string;
   amenityCodes: string[];
 }
-
