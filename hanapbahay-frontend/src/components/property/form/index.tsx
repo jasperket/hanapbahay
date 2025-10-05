@@ -65,7 +65,7 @@ export function PropertyForm({
   return (
     <>
       <Navbar01 />
-      <main className="bg-muted/40">
+      <main>
         <section className="container mx-auto max-w-4xl px-4 py-10">
           <form onSubmit={onSubmit} className="space-y-10">
             <BasicDetailsSection

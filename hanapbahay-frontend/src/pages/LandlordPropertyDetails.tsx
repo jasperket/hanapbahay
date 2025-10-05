@@ -95,7 +95,7 @@ const LandlordPropertyDetails = () => {
     return (
       <>
         <Navbar01 />
-        <main className="bg-muted/40">
+        <main>
           <section className="container mx-auto max-w-5xl px-4 py-10">
             <Button
               variant="ghost"
