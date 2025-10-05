@@ -11,9 +11,10 @@ interface Props {
     >,
   ) => void;
   disabled: boolean;
+  isRequired: (field: keyof FormState) => boolean;
 }
 
-export function LocationSection({ formState, onChange, disabled }: Props) {
+export function LocationSection({ formState, onChange, disabled, isRequired }: Props) {
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
       <InputField
@@ -22,7 +23,7 @@ export function LocationSection({ formState, onChange, disabled }: Props) {
         value={formState.province}
         onChange={onChange}
         disabled={disabled}
-        required
+        required={isRequired("province")}
       />
       <InputField
         id="city"
@@ -30,7 +31,7 @@ export function LocationSection({ formState, onChange, disabled }: Props) {
         value={formState.city}
         onChange={onChange}
         disabled={disabled}
-        required
+        required={isRequired("city")}
       />
       <InputField
         id="barangay"
@@ -89,6 +90,12 @@ function InputField({
     <div className="space-y-2">
       <label htmlFor={id} className="text-sm font-medium">
         {label}
+        {required && (
+          <span aria-hidden="true" className="text-destructive ml-1">
+            *
+          </span>
+        )}
+        {required && <span className="sr-only">required</span>}
       </label>
       <Input
         id={id}

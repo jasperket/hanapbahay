@@ -15,7 +15,7 @@ import { ImageUploader } from "./sections/ImageUploader";
 import { GalleryUploader } from "./sections/GalleryUploader";
 import { FormActions } from "./sections/FormActions";
 
-import type { AmenityOption, Property } from "@/types/property";
+import type { AmenityOption, FormState, Property } from "@/types/property";
 import { propertyTypeOptions, listingStatusOptions } from "@/types/property";
 
 interface PropertyFormProps {
@@ -23,6 +23,21 @@ interface PropertyFormProps {
   propertyId?: number;
   initialProperty?: Property | null;
 }
+
+const REQUIRED_FORM_FIELDS: ReadonlySet<keyof FormState> = new Set([
+  "title",
+  "propertyType",
+  "province",
+  "city",
+  "monthlyPrice",
+  "status",
+  "amenityCodes",
+]);
+
+const isMediaFieldRequired = {
+  coverImage: true,
+  galleryImages: true,
+} as const;
 
 export function PropertyForm({
   mode = "create",
@@ -35,6 +50,9 @@ export function PropertyForm({
     mode,
     initialProperty,
   );
+
+  const isFieldRequired = (field: keyof FormState) =>
+    REQUIRED_FORM_FIELDS.has(field);
 
   const [amenityOptions, setAmenityOptions] = useState<AmenityOption[]>([]);
 
@@ -119,18 +137,21 @@ export function PropertyForm({
               onChange={handleInputChange}
               disabled={isSubmitting}
               propertyTypeOptions={propertyTypeOptions}
+              isRequired={isFieldRequired}
             />
 
             <LocationSection
               formState={formState}
               onChange={handleInputChange}
               disabled={isSubmitting}
+              isRequired={isFieldRequired}
             />
 
             <PricingSection
               formState={formState}
               onChange={handleInputChange}
               disabled={isSubmitting}
+              isRequired={isFieldRequired}
             />
 
             <MetaSection
@@ -141,6 +162,7 @@ export function PropertyForm({
               amenityOptions={amenityOptions}
               onAmenityAdd={handleAddAmenity}
               onAmenityRemove={handleRemoveAmenity}
+              isRequired={isFieldRequired}
             />
 
             <ImageUploader
@@ -150,6 +172,7 @@ export function PropertyForm({
               setCoverImage={setCoverImage}
               setExistingCover={setExistingCover}
               disabled={isSubmitting}
+              required={isMediaFieldRequired.coverImage}
             />
 
             <GalleryUploader
@@ -159,6 +182,7 @@ export function PropertyForm({
               setExistingGallery={setExistingGallery}
               setRemovedImageIds={setRemovedImageIds}
               disabled={isSubmitting}
+              required={isMediaFieldRequired.galleryImages}
             />
 
             <FormActions isSubmitting={isSubmitting} mode={mode} />

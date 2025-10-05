@@ -11,9 +11,10 @@ interface Props {
     >,
   ) => void;
   disabled: boolean;
+  isRequired: (field: keyof FormState) => boolean;
 }
 
-export function PricingSection({ formState, onChange, disabled }: Props) {
+export function PricingSection({ formState, onChange, disabled, isRequired }: Props) {
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
       <InputField
@@ -23,7 +24,7 @@ export function PricingSection({ formState, onChange, disabled }: Props) {
         value={formState.monthlyPrice}
         onChange={onChange}
         disabled={disabled}
-        required
+        required={isRequired("monthlyPrice")}
       />
       <InputField
         id="maxPersons"
@@ -72,6 +73,12 @@ function InputField({
     <div className="space-y-2">
       <label htmlFor={id} className="text-sm font-medium">
         {label}
+        {required && (
+          <span aria-hidden="true" className="text-destructive ml-1">
+            *
+          </span>
+        )}
+        {required && <span className="sr-only">required</span>}
       </label>
       <Input
         id={id}

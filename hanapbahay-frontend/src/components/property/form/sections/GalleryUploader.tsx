@@ -13,6 +13,7 @@ interface Props {
   setExistingGallery: (media: PropertyMedia[]) => void;
   setRemovedImageIds: (updater: (prev: number[]) => number[]) => void;
   disabled: boolean;
+  required?: boolean;
 }
 
 const maxGalleryImages = 10;
@@ -24,6 +25,7 @@ export function GalleryUploader({
   setExistingGallery,
   setRemovedImageIds,
   disabled,
+  required = false,
 }: Props) {
   const handleDrop = (files: File[]) => {
     setGalleryImages([...galleryImages, ...files].slice(0, maxGalleryImages));
@@ -41,7 +43,15 @@ export function GalleryUploader({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <p className="text-sm font-medium">Gallery Images</p>
+        <p className="text-sm font-medium">
+          Gallery Images
+          {required && (
+            <span aria-hidden="true" className="text-destructive ml-1">
+              *
+            </span>
+          )}
+          {required && <span className="sr-only">required</span>}
+        </p>
         {galleryImages.length > 0 && (
           <Button
             type="button"

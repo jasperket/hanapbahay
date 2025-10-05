@@ -12,6 +12,7 @@ interface Props {
   setCoverImage: (file: File | null) => void;
   setExistingCover: (media: PropertyMedia | null) => void;
   disabled: boolean;
+  required?: boolean;
 }
 
 export function ImageUploader({
@@ -21,6 +22,7 @@ export function ImageUploader({
   setCoverImage,
   setExistingCover,
   disabled,
+  required = false,
 }: Props) {
   const handleDrop = (files: File[]) => {
     const [file] = files;
@@ -39,7 +41,15 @@ export function ImageUploader({
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm font-medium">Cover Image</p>
+          <p className="text-sm font-medium">
+            Cover Image
+            {required && (
+              <span aria-hidden="true" className="text-destructive ml-1">
+                *
+              </span>
+            )}
+            {required && <span className="sr-only">required</span>}
+          </p>
           <p className="text-muted-foreground text-xs">
             Upload a single cover image. This will be the primary photo for the
             listing.
