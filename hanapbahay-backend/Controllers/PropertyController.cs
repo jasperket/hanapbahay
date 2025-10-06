@@ -27,6 +27,13 @@ public class PropertyController : ControllerBase
         return Ok(properties);
     }
 
+    [HttpGet("filter")]
+    public async Task<IActionResult> GetFilteredProperties([FromQuery] PropertyQueryParameters parameters)
+    {
+        var result = await _propertyService.GetFilteredPropertiesAsync(parameters);
+        return Ok(result);
+    }
+
     [HttpGet("mine")]
     [Authorize(Roles = "Landlord")]
     public async Task<IActionResult> GetLandlordProperties()
