@@ -148,7 +148,7 @@ public class PropertyRepository : GenericRepository<PropertyEntity>, IPropertyRe
     {
         return await _context.Properties
             .AsNoTracking()
-            .Where(p => !p.IsDeleted)
+            .Where(p => !p.IsDeleted && p.Status == ListingStatus.Active)
             .OrderByDescending(p => p.CreatedAt)
             .ProjectTo<PropertyResponse>(_mapper.ConfigurationProvider)
             .ToListAsync();
