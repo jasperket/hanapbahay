@@ -165,7 +165,7 @@ const Home = () => {
           className="container mx-auto max-w-6xl px-4 pt-8 pb-20"
         >
           <div className="flex flex-col gap-2">
-            <h2 className="text-2xl font-semibold">Available homes</h2>
+            <h2 className="text-2xl font-semibold">For Rent</h2>
           </div>
           <div className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {renderContent()}
