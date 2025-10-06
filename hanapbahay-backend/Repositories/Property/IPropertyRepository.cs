@@ -18,6 +18,8 @@ public interface IPropertyRepository
     Task ReloadPropertyDetailsAsync(PropertyEntity property);
     Task<List<Amenity>> GetAllAmenitiesAsync();
     Task<List<Amenity>> GetAmenitiesByCodesAsync(IEnumerable<string> codes);
+    Task<(IEnumerable<PropertyResponse> Items, int TotalCount)> GetFilteredPropertiesAsync(PropertyQueryParameters parameters);
+
     void RemovePropertyMedia(Media media);
     Task SaveChangesAsync();
 }
