@@ -1,4 +1,5 @@
 using AutoMapper;
+using hanapbahay_backend.Dto.Common;
 using hanapbahay_backend.Dto.Property;
 using hanapbahay_backend.Models.Entities;
 using hanapbahay_backend.Repositories.Property;
@@ -289,4 +290,17 @@ public class PropertyService : IPropertyService
         var errors = missing.Select(code => "Amenity code '" + code + "' is invalid.").ToArray();
         return (false, amenities, errors);
     }
+
+    public async Task<PagedResult<PropertyResponse>> GetFilteredPropertiesAsync(PropertyQueryParameters parameters)
+    {
+        var (items, total) = await _propertyRepository.GetFilteredPropertiesAsync(parameters);
+        return new PagedResult<PropertyResponse>
+        {
+            Items = items.ToList(),
+            TotalCount = total,
+            Page = parameters.Page,
+            PageSize = parameters.PageSize
+        };
+    }
+
 }
