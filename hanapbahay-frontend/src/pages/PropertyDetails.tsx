@@ -190,13 +190,13 @@ const PropertyDetails = () => {
             {galleryImages.length > 0 && (
               <div>
                 <h2 className="text-xl font-semibold">Gallery</h2>
-                <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="mt-3 flex gap-3 overflow-x-auto">
                   {galleryImages.map((media) => (
                     <img
                       key={media.id}
                       src={media.url}
                       alt={`${property.title} gallery image`}
-                      className="h-48 w-full rounded-md object-cover"
+                      className="max-w-36 rounded-md object-cover"
                     />
                   ))}
                 </div>
