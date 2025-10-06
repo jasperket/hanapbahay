@@ -127,7 +127,7 @@ const Home = () => {
           </div>
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <h3 className="text-foreground group-hover:text-primary text-base leading-tight font-semibold transition-colors">
+              <h3 className="text-foreground group-hover:text-primary overflow-hidden text-base leading-tight font-semibold text-ellipsis whitespace-nowrap transition-colors">
                 {property.title}
               </h3>
               <p className="text-muted-foreground mt-1 truncate text-sm">
