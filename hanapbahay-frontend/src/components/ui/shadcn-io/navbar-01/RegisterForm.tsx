@@ -50,6 +50,7 @@ export const RegisterForm = ({ onSuccess }: { onSuccess: () => void }) => {
 
   return (
     <form className="space-y-4" onSubmit={onSubmit}>
+      <p className="text-muted-foreground text-sm">All fields are required</p>
       <Input
         placeholder="Full name"
         value={form.displayName}

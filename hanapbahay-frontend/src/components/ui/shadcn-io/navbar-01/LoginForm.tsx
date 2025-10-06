@@ -34,8 +34,8 @@ export const LoginForm = ({ onSuccess }: { onSuccess: () => void }) => {
 
       onSuccess();
     } catch (e) {
-      setError("Login failed");
-      toast.error("Login failed");
+      setError("Invalid credentials!");
+      toast.error("Invalid credentials!");
     } finally {
       setSubmitting(false);
     }
@@ -65,7 +65,7 @@ export const LoginForm = ({ onSuccess }: { onSuccess: () => void }) => {
           <button
             type="button"
             onClick={() => setShowPassword((prev) => !prev)}
-            className="absolute inset-y-0 right-0 flex items-center px-3 text-sm text-muted-foreground"
+            className="text-muted-foreground absolute inset-y-0 right-0 flex items-center px-3 text-sm"
             aria-label={showPassword ? "Hide password" : "Show password"}
           >
             {showPassword ? (
