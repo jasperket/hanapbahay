@@ -163,4 +163,49 @@ public class PropertyRepository : GenericRepository<PropertyEntity>, IPropertyRe
             .ProjectTo<PropertyResponse>(_mapper.ConfigurationProvider)
             .ToListAsync();
     }
+
+    public async Task<(IEnumerable<PropertyResponse> Items, int TotalCount)>
+    GetFilteredPropertiesAsync(PropertyQueryParameters parameters)
+    {
+        var query = _context.Properties
+            .AsNoTracking()
+            .Where(p => !p.IsDeleted)
+            .Include(p => p.PropertyAmenities)
+                .ThenInclude(pa => pa.Amenity)
+            .AsQueryable();
+
+        // Search by title
+        if (!string.IsNullOrWhiteSpace(parameters.Search))
+        {
+            var term = parameters.Search.Trim().ToLower();
+            query = query.Where(p => p.Title.ToLower().Contains(term));
+        }
+
+        // Filter by property type
+        if (parameters.PropertyType.HasValue)
+        {
+            query = query.Where(p => (int)p.PropertyType == parameters.PropertyType.Value);
+        }
+
+        // Filter by amenities
+        if (parameters.AmenityCodes != null && parameters.AmenityCodes.Any())
+        {
+            var codes = parameters.AmenityCodes.Select(a => a.Trim().ToUpper()).ToList();
+            query = query.Where(p =>
+                p.PropertyAmenities.Any(pa =>
+                    codes.Contains(pa.Amenity.Code.ToUpper())));
+        }
+
+        // Pagination
+        var totalCount = await query.CountAsync();
+        var items = await query
+            .OrderByDescending(p => p.CreatedAt)
+            .Skip((parameters.Page - 1) * parameters.PageSize)
+            .Take(parameters.PageSize)
+            .ProjectTo<PropertyResponse>(_mapper.ConfigurationProvider)
+            .ToListAsync();
+
+        return (items, totalCount);
+    }
+
 }
