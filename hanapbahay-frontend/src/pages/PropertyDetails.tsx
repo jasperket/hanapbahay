@@ -173,12 +173,12 @@ const PropertyDetails = () => {
               </p>
             </div>
 
-            <div className="bg-background overflow-hidden rounded-lg border shadow-sm">
+            <div className="flex justify-center overflow-hidden rounded-lg border bg-gray-200 shadow-sm">
               {coverImage ? (
                 <img
                   src={coverImage.url}
                   alt={`${property.title} cover`}
-                  className="h-80 w-full object-cover"
+                  className="h-80 object-cover"
                 />
               ) : (
                 <div className="bg-muted text-muted-foreground flex h-80 w-full items-center justify-center text-sm">
