@@ -10,6 +10,7 @@ import type {
   RegisterResponse,
   UserRoleValue,
 } from "@/types/auth";
+import axios from "axios";
 
 const roles: { label: string; value: UserRoleValue }[] = [
   { label: "Renter", value: 0 },
@@ -41,8 +42,17 @@ export const RegisterForm = ({ onSuccess }: { onSuccess: () => void }) => {
       );
       onSuccess();
     } catch (e) {
-      setError("Registration failed");
-      toast.error("Registration failed" + e);
+      let errors: string[] | null = null;
+      if (axios.isAxiosError(e)) {
+        errors = Object.values(e.response?.data?.errors ?? {});
+        for (const error of errors ?? []) {
+          toast.error(error);
+          setError((prev) => (prev ? prev + "\n" + error : error));
+        }
+      } else {
+        setError("Registration failed");
+        toast.error("Registration failed" + e);
+      }
     } finally {
       setSubmitting(false);
     }
@@ -110,7 +120,7 @@ export const RegisterForm = ({ onSuccess }: { onSuccess: () => void }) => {
           ))}
         </select>
       </div>
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-xs text-red-600">{error}</p>}
       <Button type="submit" className="w-full" disabled={submitting}>
         {submitting ? (
           <span className="flex items-center justify-center gap-2">
