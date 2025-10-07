@@ -46,12 +46,10 @@ export const RegisterForm = ({ onSuccess }: { onSuccess: () => void }) => {
       if (axios.isAxiosError(e)) {
         errors = Object.values(e.response?.data?.errors ?? {});
         for (const error of errors ?? []) {
-          toast.error(error);
           setError((prev) => (prev ? prev + "\n" + error : error));
         }
       } else {
         setError("Registration failed");
-        toast.error("Registration failed" + e);
       }
     } finally {
       setSubmitting(false);

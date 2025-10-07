@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/providers/AuthProvider";
 import { useNavigate } from "react-router";
 import type { LoginPayload, LoginResponse } from "@/types/auth";
+import axios from "axios";
 
 export const LoginForm = ({ onSuccess }: { onSuccess: () => void }) => {
   const { login } = useAuth();
@@ -34,8 +35,11 @@ export const LoginForm = ({ onSuccess }: { onSuccess: () => void }) => {
 
       onSuccess();
     } catch (e) {
-      setError("Invalid credentials!");
-      toast.error("Invalid credentials!");
+      if (axios.isAxiosError(e)) {
+        setError(e.response?.data?.message ?? "Login failed");
+      } else {
+        setError("Login failed");
+      }
     } finally {
       setSubmitting(false);
     }
