@@ -3,7 +3,7 @@ import {
   createRoutesFromElements,
   Route,
 } from "react-router";
-import RootLayout, { loader as rootLoader } from "@/routes/root";
+import RootLayout from "@/routes/root";
 import ProtectedRoute from "@/routes/ProtectedRoute";
 import LandlordRoute from "@/routes/LandlordRoute";
 import Home from "@/pages/Home";
@@ -13,6 +13,7 @@ import CreateProperty from "@/pages/CreateProperty";
 import LandlordProperties from "@/pages/LandlordProperties";
 import EditProperty from "@/pages/EditProperty";
 import GuestRoute from "./routes/GuestRoute";
+import { rootLoader } from "./routes/rootLoader";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -37,5 +38,3 @@ const router = createBrowserRouter(
 );
 
 export { router };
-
-
