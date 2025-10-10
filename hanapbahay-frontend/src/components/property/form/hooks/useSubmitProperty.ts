@@ -82,7 +82,7 @@ function mapFormToPayload(form: FormState) {
     city: form.city.trim(),
     barangay: form.barangay.trim() || undefined,
     zipCode: form.zipCode.trim() || undefined,
-    targetLocation: form.targetLocation.trim() || undefined,
+    streetAddress: form.streetAddress.trim() || undefined,
     landmark: form.landmark.trim() || undefined,
     monthlyPrice: Number(form.monthlyPrice),
     maxPersons: form.maxPersons ? Number(form.maxPersons) : undefined,

@@ -125,6 +125,7 @@ const LandlordProperties = () => {
 
                 return (
                   <PropertyCard
+                    key={property.id}
                     property={property}
                     statusLabel={statusLabel}
                     deletingId={deletingId}

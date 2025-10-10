@@ -22,14 +22,17 @@ const createProperty = async (payload: CreatePropertyPayload) => {
   if (payload.zipCode) {
     formData.append("ZipCode", payload.zipCode);
   }
-  if (payload.targetLocation) {
-    formData.append("TargetLocation", payload.targetLocation);
+  if (payload.streetAddress) {
+    formData.append("streetAddress", payload.streetAddress);
   }
   if (payload.landmark) {
     formData.append("Landmark", payload.landmark);
   }
   formData.append("MonthlyPrice", payload.monthlyPrice.toString());
-  if (typeof payload.maxPersons === "number" && !Number.isNaN(payload.maxPersons)) {
+  if (
+    typeof payload.maxPersons === "number" &&
+    !Number.isNaN(payload.maxPersons)
+  ) {
     formData.append("MaxPersons", payload.maxPersons.toString());
   }
   if (payload.moveInDate) {
@@ -93,14 +96,17 @@ const updateProperty = async (
   if (payload.zipCode) {
     formData.append("ZipCode", payload.zipCode);
   }
-  if (payload.targetLocation) {
-    formData.append("TargetLocation", payload.targetLocation);
+  if (payload.streetAddress) {
+    formData.append("streetAddress", payload.streetAddress);
   }
   if (payload.landmark) {
     formData.append("Landmark", payload.landmark);
   }
   formData.append("MonthlyPrice", payload.monthlyPrice.toString());
-  if (typeof payload.maxPersons === "number" && !Number.isNaN(payload.maxPersons)) {
+  if (
+    typeof payload.maxPersons === "number" &&
+    !Number.isNaN(payload.maxPersons)
+  ) {
     formData.append("MaxPersons", payload.maxPersons.toString());
   }
   if (payload.moveInDate) {
