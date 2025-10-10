@@ -1,10 +1,13 @@
 import { api } from "@/services/api";
+import type { PagedResult } from "@/types/common";
 import type {
   AmenityOption,
   CreatePropertyPayload,
   Property,
+  PropertyFilterParams,
   UpdatePropertyPayload,
 } from "@/types/property";
+import qs from "qs";
 
 const createProperty = async (payload: CreatePropertyPayload) => {
   const formData = new FormData();
@@ -59,11 +62,23 @@ const createProperty = async (payload: CreatePropertyPayload) => {
 
 const getAmenities = async () => {
   const { data } = await api.get<AmenityOption[]>("Property/amenities");
+  console.log(data);
   return data;
 };
 
 const getProperties = async () => {
   const { data } = await api.get<Property[]>("Property");
+  return data;
+};
+
+export const getFilteredProperties = async (
+  params: PropertyFilterParams,
+): Promise<PagedResult<Property>> => {
+  const { data } = await api.get<PagedResult<Property>>("/property/filter", {
+    params,
+    paramsSerializer: (p) => qs.stringify(p, { arrayFormat: "repeat" }),
+  });
+  console.log(data);
   return data;
 };
 

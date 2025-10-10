@@ -56,6 +56,14 @@ export interface Property {
   media: PropertyMedia[];
 }
 
+export interface PropertyFilterParams {
+  search?: string;
+  propertyType?: number;
+  amenityCodes?: string[];
+  page?: number;
+  pageSize?: number;
+}
+
 export interface CreatePropertyPayload {
   title: string;
   description?: string;
