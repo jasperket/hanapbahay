@@ -53,9 +53,9 @@ export function LocationSection({
         disabled={disabled}
       />
       <InputField
-        id="targetLocation"
+        id="streetAddress"
         label="Street Address"
-        value={formState.targetLocation}
+        value={formState.streetAddress}
         onChange={onChange}
         disabled={disabled}
       />

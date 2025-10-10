@@ -18,7 +18,7 @@ public class PropertyResponse
     public string? Barangay { get; set; }
     public string? ZipCode { get; set; }
 
-    public string? TargetLocation { get; set; }
+    public string? StreetAddress { get; set; }
     public string? Landmark { get; set; }
 
     public decimal MonthlyPrice { get; set; }

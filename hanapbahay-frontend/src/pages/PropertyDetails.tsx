@@ -283,12 +283,12 @@ const PropertyDetails = () => {
                     {createdAtLabel ?? "Not specified"}
                   </dd>
                 </div>
-                {property.targetLocation && (
+                {property.streetAddress && (
                   <div>
                     <dt className="text-muted-foreground text-xs tracking-wide uppercase">
                       Street Address
                     </dt>
-                    <dd className="font-medium">{property.targetLocation}</dd>
+                    <dd className="font-medium">{property.streetAddress}</dd>
                   </div>
                 )}
                 {property.landmark && (

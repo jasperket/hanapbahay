@@ -44,7 +44,7 @@ export interface Property {
   city: string;
   barangay?: string | null;
   zipCode?: string | null;
-  targetLocation?: string | null;
+  streetAddress?: string | null;
   landmark?: string | null;
   monthlyPrice: number;
   maxPersons?: number | null;
@@ -64,7 +64,7 @@ export interface CreatePropertyPayload {
   city: string;
   barangay?: string;
   zipCode?: string;
-  targetLocation?: string;
+  streetAddress?: string;
   landmark?: string;
   monthlyPrice: number;
   maxPersons?: number;
@@ -90,7 +90,7 @@ export interface FormState {
   city: string;
   barangay: string;
   zipCode: string;
-  targetLocation: string;
+  streetAddress: string;
   landmark: string;
   monthlyPrice: string;
   maxPersons: string;

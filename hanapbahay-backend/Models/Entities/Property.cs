@@ -29,7 +29,7 @@ public class Property
     public string? Barangay { get; set; }
     public string? ZipCode { get; set; }
 
-    public string? TargetLocation { get; set; }
+    public string? StreetAddress { get; set; }
     public string? Landmark { get; set; }
 
     [Precision(18, 2)]
