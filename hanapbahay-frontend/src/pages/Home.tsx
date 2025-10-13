@@ -71,14 +71,39 @@ const Home = () => {
 
   const handleRemoveAmenity = (code: string) => {
     setAmenityValues((prev) => prev.filter((value) => value !== code));
+    setSearchParams((prev) => {
+      const searchParams = new URLSearchParams(prev);
+      searchParams.delete(code);
+      return searchParams;
+    });
   };
 
   const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value);
+    setSearchParams((prev) => {
+      const searchParams = new URLSearchParams(prev);
+      searchParams.set("search", e.target.value);
+      return searchParams;
+    });
   };
 
   const handlePropertyTypeChange = (value: string) => {
+    if (value === "none") value = "";
     setPropertyTypeValue(value);
+    setSearchParams((prev) => {
+      const searchParams = new URLSearchParams(prev);
+      searchParams.set("propertyType", value);
+      return searchParams;
+    });
+  };
+
+  const handleAddAmenity = (code: string) => {
+    setAmenityValues((prev) => [...prev, code]);
+    setSearchParams((prev) => {
+      const searchParams = new URLSearchParams(prev);
+      searchParams.append(code, "");
+      return searchParams;
+    });
   };
 
   return (
@@ -107,6 +132,7 @@ const Home = () => {
                 <SelectValue placeholder="Select property type" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="none">None</SelectItem>
                 {propertyTypeOptions.map((opt) => (
                   <SelectItem key={opt.value} value={opt.value.toString()}>
                     {opt.label}
@@ -170,11 +196,9 @@ const Home = () => {
                         <CommandItem
                           key={amenity.code}
                           value={amenity.code}
-                          onSelect={(currentValue) => {
-                            setAmenityValues((prev) => {
-                              return [...prev, currentValue];
-                            });
-                          }}
+                          onSelect={(currentValue) =>
+                            handleAddAmenity(currentValue)
+                          }
                         >
                           {amenity.label}
                           <Check
